@@ -7,7 +7,41 @@
 
 import Foundation
 import UIKit
-import SnapKit
+
+private enum MainTab: CaseIterable {
+    case home
+    case me
+
+    var title: String {
+        switch self {
+        case .home: return "Home"
+        case .me: return "Me"
+        }
+    }
+
+    var icon: UIImage? {
+        switch self {
+        case .home: return UIImage(systemName: "video")
+        case .me: return UIImage(systemName: "person")
+        }
+    }
+
+    var selectedIcon: UIImage? {
+        switch self {
+        case .home: return UIImage(systemName: "video.fill")
+        case .me: return UIImage(systemName: "person.fill")
+        }
+    }
+
+    func makeRootViewController() -> UIViewController {
+        switch self {
+        case .home:
+            return MainHomeViewController()
+        case .me:
+            return MainMeViewController()
+        }
+    }
+}
 
 class MainTabBar: UITabBarController {
     
@@ -18,22 +52,18 @@ class MainTabBar: UITabBarController {
     }
     
     private func setupTabs() {
-        let homeViewController = MainHomeViewController()
-        let meViewController = MainMeViewController()
-
-        homeViewController.tabBarItem = UITabBarItem(
-            title: "Home",
-            image: UIImage(systemName: "video"),
-            selectedImage: UIImage(systemName: "video.fill")
-        )
-
-        meViewController.tabBarItem = UITabBarItem(
-            title: "Me",
-            image: UIImage(systemName: "person"),
-            selectedImage: UIImage(systemName: "person.fill")
-        )
+        let controllers = MainTab.allCases.map { tab -> UIViewController in
+            let root = tab.makeRootViewController()
+            let nav = UINavigationController(rootViewController: root)
+            nav.tabBarItem = UITabBarItem(
+                title: tab.title,
+                image: tab.icon,
+                selectedImage: tab.selectedIcon
+            )
+            return nav
+        }
         
-        viewControllers = [homeViewController, meViewController]
+        viewControllers = controllers
     }
     
     private func setupGlassTabBar() {
@@ -41,7 +71,12 @@ class MainTabBar: UITabBarController {
         appearance.configureWithDefaultBackground()
         appearance.backgroundEffect = UIBlurEffect(style: .systemThinMaterial)
         appearance.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.6)
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor.vimeoBlue
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: UIColor.vimeoBlue
+        ]
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance
+        tabBar.tintColor = UIColor.vimeoBlue
     }
 }

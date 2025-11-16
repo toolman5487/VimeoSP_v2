@@ -12,7 +12,7 @@ class ViewController: UIViewController {
 
     private let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "Vimeo Wordmark_Black")
+        imageView.image = UIImage(named: "Vimeo Wordmark_White")
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
