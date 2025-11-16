@@ -23,6 +23,11 @@ class ViewController: UIViewController {
         setupLogo()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        startTransitionTimer()
+    }
+
     private func setupLogo() {
         view.addSubview(imageView)
         
@@ -30,6 +35,27 @@ class ViewController: UIViewController {
             make.center.equalToSuperview()
             make.size.equalTo(240)
         }
+    }
+
+    private func startTransitionTimer() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            self?.goToMainTabBar()
+        }
+    }
+
+    private func goToMainTabBar() {
+        let mainTabBar = MainTabBar()
+        guard let window = view.window else {
+            navigationController?.setViewControllers([mainTabBar], animated: true)
+            return
+        }
+
+        UIView.transition(with: window,
+                          duration: 0.4,
+                          options: .transitionCrossDissolve,
+                          animations: { [weak self] in
+            self?.navigationController?.setViewControllers([mainTabBar], animated: false)
+        })
     }
 
 
