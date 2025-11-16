@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		15FF4C3C2EC9975A00E7888D /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 15FF4C3B2EC9975A00E7888D /* SnapKit */; };
+		15FF4C3F2EC9976700E7888D /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 15FF4C3E2EC9976700E7888D /* SDWebImage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		15FF4C222EC9937000E7888D /* VimeoSP_v2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VimeoSP_v2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +41,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				15FF4C3F2EC9976700E7888D /* SDWebImage in Frameworks */,
+				15FF4C3C2EC9975A00E7888D /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +85,8 @@
 			);
 			name = VimeoSP_v2;
 			packageProductDependencies = (
+				15FF4C3B2EC9975A00E7888D /* SnapKit */,
+				15FF4C3E2EC9976700E7888D /* SDWebImage */,
 			);
 			productName = VimeoSP_v2;
 			productReference = 15FF4C222EC9937000E7888D /* VimeoSP_v2.app */;
@@ -107,6 +116,10 @@
 			);
 			mainGroup = 15FF4C192EC9937000E7888D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				15FF4C3A2EC9975A00E7888D /* XCRemoteSwiftPackageReference "SnapKit" */,
+				15FF4C3D2EC9976700E7888D /* XCRemoteSwiftPackageReference "SDWebImage" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 15FF4C232EC9937000E7888D /* Products */;
 			projectDirPath = "";
@@ -150,7 +163,6 @@
 				INFOPLIST_FILE = VimeoSP_v2/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -182,7 +194,6 @@
 				INFOPLIST_FILE = VimeoSP_v2/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -345,6 +356,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		15FF4C3A2EC9975A00E7888D /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		15FF4C3D2EC9976700E7888D /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.21.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		15FF4C3B2EC9975A00E7888D /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 15FF4C3A2EC9975A00E7888D /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		15FF4C3E2EC9976700E7888D /* SDWebImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 15FF4C3D2EC9976700E7888D /* XCRemoteSwiftPackageReference "SDWebImage" */;
+			productName = SDWebImage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 15FF4C1A2EC9937000E7888D /* Project object */;
 }
