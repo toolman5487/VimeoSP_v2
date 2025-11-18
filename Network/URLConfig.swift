@@ -1,0 +1,47 @@
+//
+//  URLConfig.swift
+//  VimeoSP_v2
+//
+//  Created by Willy Hsu on 2025/11/18.
+//
+
+import Foundation
+
+struct URLConfig {
+    static let baseURL = URL(string: "https://api.vimeo.com")!
+
+    static var token: String {
+        Bundle.main.object(forInfoDictionaryKey: "VimeoToken") as? String ?? ""
+    }
+}
+
+enum MePath {
+    case me
+    case meVideos
+    case meLikes
+    case meFollowing
+    case meFollowers
+    case meAlbums
+    case mePictures
+    case meFeed
+    case meChannels
+    case meGroups
+    case meTeams
+
+    var path: String {
+        switch self {
+        case .me: return "/me"
+        case .meVideos: return "/me/videos"
+        case .meLikes: return "/me/likes"
+        case .meFollowing: return "/me/following"
+        case .meFollowers: return "/me/followers"
+        case .meAlbums: return "/me/albums"
+        case .mePictures: return "/me/pictures"
+        case .meFeed: return "/me/feed"
+        case .meChannels: return "/me/channels"
+        case .meGroups: return "/me/groups"
+        case .meTeams: return "/me/teams"
+        }
+    }
+}
+

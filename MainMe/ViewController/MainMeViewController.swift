@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 
-class MainMeViewController: UIViewController{
+class MainMeViewController: BaseMainViewController{
     
     override func viewDidLoad() {
         super.viewDidLoad()

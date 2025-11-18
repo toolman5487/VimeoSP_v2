@@ -8,6 +8,18 @@
 import Foundation
 import UIKit
 
+private enum TabBarItemColor {
+    case normal
+    case selected
+
+    var color: UIColor {
+        switch self {
+        case .normal: return UIColor.vimeoWhite
+        case .selected: return UIColor.vimeoBlue
+        }
+    }
+}
+
 private enum MainTab: CaseIterable {
     case home
     case me
@@ -68,15 +80,18 @@ class MainTabBar: UITabBarController {
     
     private func setupGlassTabBar() {
         let appearance = UITabBarAppearance()
-        appearance.configureWithDefaultBackground()
-        appearance.backgroundEffect = UIBlurEffect(style: .systemThinMaterial)
-        appearance.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.6)
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor.vimeoBlue
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundEffect = UIBlurEffect(style: .systemChromeMaterialDark)
+        appearance.stackedLayoutAppearance.normal.iconColor = TabBarItemColor.normal.color
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: TabBarItemColor.normal.color
+        ]
+        appearance.stackedLayoutAppearance.selected.iconColor = TabBarItemColor.selected.color
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-            .foregroundColor: UIColor.vimeoBlue
+            .foregroundColor: TabBarItemColor.selected.color
         ]
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance
-        tabBar.tintColor = UIColor.vimeoBlue
+        tabBar.tintColor = TabBarItemColor.selected.color
     }
 }

@@ -14,6 +14,12 @@
 		15FF4C482EC99C8300E7888D /* MainMeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C472EC99C8300E7888D /* MainMeViewController.swift */; };
 		15FF4C4C2ECA1F1E00E7888D /* UIColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C4B2ECA1F1E00E7888D /* UIColorExtension.swift */; };
 		15FF4C4F2ECA21E400E7888D /* APIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C4E2ECA21E400E7888D /* APIConfig.swift */; };
+		15FF4C522ECCA0EC00E7888D /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 15FF4C512ECCA0EC00E7888D /* Alamofire */; };
+		15FF4C572ECCA8D000E7888D /* BaseMainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C562ECCA8D000E7888D /* BaseMainViewController.swift */; };
+		15FF4C592ECCAD4B00E7888D /* URLConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C582ECCAD4B00E7888D /* URLConfig.swift */; };
+		15FF4C602ECCB91100E7888D /* MainMeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C5F2ECCB91100E7888D /* MainMeModel.swift */; };
+		15FF4C632ECCBA2200E7888D /* MainMeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C622ECCBA2200E7888D /* MainMeService.swift */; };
+		15FF4C652ECCBADA00E7888D /* MainMeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C642ECCBADA00E7888D /* MainMeViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +29,11 @@
 		15FF4C472EC99C8300E7888D /* MainMeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeViewController.swift; sourceTree = "<group>"; };
 		15FF4C4B2ECA1F1E00E7888D /* UIColorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorExtension.swift; sourceTree = "<group>"; };
 		15FF4C4E2ECA21E400E7888D /* APIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfig.swift; sourceTree = "<group>"; };
+		15FF4C562ECCA8D000E7888D /* BaseMainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseMainViewController.swift; sourceTree = "<group>"; };
+		15FF4C582ECCAD4B00E7888D /* URLConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLConfig.swift; sourceTree = "<group>"; };
+		15FF4C5F2ECCB91100E7888D /* MainMeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeModel.swift; sourceTree = "<group>"; };
+		15FF4C622ECCBA2200E7888D /* MainMeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeService.swift; sourceTree = "<group>"; };
+		15FF4C642ECCBADA00E7888D /* MainMeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -51,6 +62,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				15FF4C522ECCA0EC00E7888D /* Alamofire in Frameworks */,
 				15FF4C3F2EC9976700E7888D /* SDWebImage in Frameworks */,
 				15FF4C3C2EC9975A00E7888D /* SnapKit in Frameworks */,
 			);
@@ -62,6 +74,7 @@
 		15FF4C192EC9937000E7888D = {
 			isa = PBXGroup;
 			children = (
+				15FF4C532ECCA89D00E7888D /* BaseView */,
 				15FF4C4D2ECA21CC00E7888D /* Network */,
 				15FF4C492EC9A3E600E7888D /* Extension */,
 				15FF4C442EC99C4600E7888D /* MainMe */,
@@ -99,7 +112,11 @@
 		15FF4C442EC99C4600E7888D /* MainMe */ = {
 			isa = PBXGroup;
 			children = (
-				15FF4C472EC99C8300E7888D /* MainMeViewController.swift */,
+				15FF4C5E2ECCB8F900E7888D /* ViewController */,
+				15FF4C5D2ECCB8EE00E7888D /* View */,
+				15FF4C5C2ECCB8E300E7888D /* ViewModel */,
+				15FF4C5B2ECCB8DD00E7888D /* Service */,
+				15FF4C5A2ECCB8D800E7888D /* Model */,
 			);
 			path = MainMe;
 			sourceTree = "<group>";
@@ -124,8 +141,56 @@
 			isa = PBXGroup;
 			children = (
 				15FF4C4E2ECA21E400E7888D /* APIConfig.swift */,
+				15FF4C582ECCAD4B00E7888D /* URLConfig.swift */,
 			);
 			path = Network;
+			sourceTree = "<group>";
+		};
+		15FF4C532ECCA89D00E7888D /* BaseView */ = {
+			isa = PBXGroup;
+			children = (
+				15FF4C562ECCA8D000E7888D /* BaseMainViewController.swift */,
+			);
+			path = BaseView;
+			sourceTree = "<group>";
+		};
+		15FF4C5A2ECCB8D800E7888D /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				15FF4C5F2ECCB91100E7888D /* MainMeModel.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		15FF4C5B2ECCB8DD00E7888D /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				15FF4C622ECCBA2200E7888D /* MainMeService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		15FF4C5C2ECCB8E300E7888D /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				15FF4C642ECCBADA00E7888D /* MainMeViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		15FF4C5D2ECCB8EE00E7888D /* View */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		15FF4C5E2ECCB8F900E7888D /* ViewController */ = {
+			isa = PBXGroup;
+			children = (
+				15FF4C472EC99C8300E7888D /* MainMeViewController.swift */,
+			);
+			path = ViewController;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -150,6 +215,7 @@
 			packageProductDependencies = (
 				15FF4C3B2EC9975A00E7888D /* SnapKit */,
 				15FF4C3E2EC9976700E7888D /* SDWebImage */,
+				15FF4C512ECCA0EC00E7888D /* Alamofire */,
 			);
 			productName = VimeoSP_v2;
 			productReference = 15FF4C222EC9937000E7888D /* VimeoSP_v2.app */;
@@ -182,6 +248,7 @@
 			packageReferences = (
 				15FF4C3A2EC9975A00E7888D /* XCRemoteSwiftPackageReference "SnapKit" */,
 				15FF4C3D2EC9976700E7888D /* XCRemoteSwiftPackageReference "SDWebImage" */,
+				15FF4C502ECCA0EC00E7888D /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 15FF4C232EC9937000E7888D /* Products */;
@@ -210,9 +277,14 @@
 			files = (
 				15FF4C422EC99C0100E7888D /* MainTabBar.swift in Sources */,
 				15FF4C4C2ECA1F1E00E7888D /* UIColorExtension.swift in Sources */,
+				15FF4C632ECCBA2200E7888D /* MainMeService.swift in Sources */,
 				15FF4C4F2ECA21E400E7888D /* APIConfig.swift in Sources */,
 				15FF4C462EC99C6100E7888D /* MainHomeViewController.swift in Sources */,
+				15FF4C572ECCA8D000E7888D /* BaseMainViewController.swift in Sources */,
+				15FF4C602ECCB91100E7888D /* MainMeModel.swift in Sources */,
+				15FF4C592ECCAD4B00E7888D /* URLConfig.swift in Sources */,
 				15FF4C482EC99C8300E7888D /* MainMeViewController.swift in Sources */,
+				15FF4C652ECCBADA00E7888D /* MainMeViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -442,6 +514,14 @@
 				minimumVersion = 5.21.3;
 			};
 		};
+		15FF4C502ECCA0EC00E7888D /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -454,6 +534,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 15FF4C3D2EC9976700E7888D /* XCRemoteSwiftPackageReference "SDWebImage" */;
 			productName = SDWebImage;
+		};
+		15FF4C512ECCA0EC00E7888D /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 15FF4C502ECCA0EC00E7888D /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
