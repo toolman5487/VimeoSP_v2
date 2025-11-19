@@ -92,7 +92,7 @@ struct APIConfig {
     ) {
         let url = URLConfig.baseURL.appendingPathComponent(path)
         AF.request(url, method: .get, parameters: parameters, headers: headers)
-            .validate()
+            .validate(statusCode: 200..<300)
             .responseData { response in
                 switch response.result {
                 case .success(let data):
@@ -111,7 +111,7 @@ struct APIConfig {
     ) {
         let url = URLConfig.baseURL.appendingPathComponent(path)
         AF.request(url, method: .post, parameters: parameters, encoding: encoding, headers: headers)
-            .validate()
+            .validate(statusCode: 200..<300)
             .responseData { response in
                 switch response.result {
                 case .success(let data):
@@ -130,7 +130,7 @@ struct APIConfig {
     ) {
         let url = URLConfig.baseURL.appendingPathComponent(path)
         AF.request(url, method: .patch, parameters: parameters, encoding: encoding, headers: headers)
-            .validate()
+            .validate(statusCode: 200..<300)
             .responseData { response in
                 switch response.result {
                 case .success(let data):
@@ -149,7 +149,7 @@ struct APIConfig {
     ) {
         let url = URLConfig.baseURL.appendingPathComponent(path)
         AF.request(url, method: .put, parameters: parameters, encoding: encoding, headers: headers)
-            .validate()
+            .validate(statusCode: 200..<300)
             .responseData { response in
                 switch response.result {
                 case .success(let data):
@@ -167,7 +167,7 @@ struct APIConfig {
     ) {
         let url = URLConfig.baseURL.appendingPathComponent(path)
         AF.request(url, method: .delete, parameters: parameters, headers: headers)
-            .validate()
+            .validate(statusCode: 200..<300)
             .responseData { response in
                 switch response.result {
                 case .success(let data):

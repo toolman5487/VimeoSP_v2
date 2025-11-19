@@ -20,6 +20,7 @@
 		15FF4C602ECCB91100E7888D /* MainMeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C5F2ECCB91100E7888D /* MainMeModel.swift */; };
 		15FF4C632ECCBA2200E7888D /* MainMeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C622ECCBA2200E7888D /* MainMeService.swift */; };
 		15FF4C652ECCBADA00E7888D /* MainMeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C642ECCBADA00E7888D /* MainMeViewModel.swift */; };
+		15FF4C672ECE0CF700E7888D /* MainMeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C662ECE0CF700E7888D /* MainMeCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		15FF4C5F2ECCB91100E7888D /* MainMeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeModel.swift; sourceTree = "<group>"; };
 		15FF4C622ECCBA2200E7888D /* MainMeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeService.swift; sourceTree = "<group>"; };
 		15FF4C642ECCBADA00E7888D /* MainMeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeViewModel.swift; sourceTree = "<group>"; };
+		15FF4C662ECE0CF700E7888D /* MainMeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -181,6 +183,7 @@
 		15FF4C5D2ECCB8EE00E7888D /* View */ = {
 			isa = PBXGroup;
 			children = (
+				15FF4C662ECE0CF700E7888D /* MainMeCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -284,6 +287,7 @@
 				15FF4C602ECCB91100E7888D /* MainMeModel.swift in Sources */,
 				15FF4C592ECCAD4B00E7888D /* URLConfig.swift in Sources */,
 				15FF4C482EC99C8300E7888D /* MainMeViewController.swift in Sources */,
+				15FF4C672ECE0CF700E7888D /* MainMeCell.swift in Sources */,
 				15FF4C652ECCBADA00E7888D /* MainMeViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
