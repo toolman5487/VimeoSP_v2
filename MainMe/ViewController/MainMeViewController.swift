@@ -29,7 +29,7 @@ class MainMeViewController: BaseMainViewController {
     }
     
     private func setupDataSource() {
-        collectionView.register(MainMeAvartaCell.self, forCellWithReuseIdentifier: "MainMeAvartaCell")
+        collectionView.register(MainMeAvatarCell.self, forCellWithReuseIdentifier: "MainMeAvatarCell")
     }
     
     private func bindViewModel() {
@@ -57,7 +57,7 @@ extension MainMeViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeAvartaCell", for: indexPath) as! MainMeAvartaCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeAvatarCell", for: indexPath) as! MainMeAvatarCell
         cell.configure(with: viewModel)
         return cell
     }

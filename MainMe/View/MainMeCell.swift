@@ -10,7 +10,7 @@ import UIKit
 import SnapKit
 import SDWebImage
 
-class MainMeAvartaCell: UICollectionViewCell {
+class MainMeAvatarCell: UICollectionViewCell {
     
     private let preferredSize: PictureSizeType = .size100
     
