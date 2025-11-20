@@ -67,6 +67,7 @@ class MainTabBar: UITabBarController {
         let controllers = MainTab.allCases.map { tab -> UIViewController in
             let root = tab.makeRootViewController()
             let nav = UINavigationController(rootViewController: root)
+            nav.navigationBar.prefersLargeTitles = true
             nav.tabBarItem = UITabBarItem(
                 title: tab.title,
                 image: tab.icon,

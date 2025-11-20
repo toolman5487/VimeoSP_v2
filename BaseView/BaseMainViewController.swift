@@ -30,6 +30,7 @@ class BaseMainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.vimeoBlack
+        navigationItem.largeTitleDisplayMode = .always
         setupCollectionView()
         setupRefreshControl()
     }

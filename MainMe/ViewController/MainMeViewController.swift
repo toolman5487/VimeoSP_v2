@@ -49,6 +49,10 @@ class MainMeViewController: BaseMainViewController {
             }
             .store(in: &cancellables)
     }
+    
+    override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: collectionView.frame.width, height: MainMeAvatarCell.cellHeight)
+    }
 }
 
 extension MainMeViewController: UICollectionViewDataSource {
@@ -62,3 +66,4 @@ extension MainMeViewController: UICollectionViewDataSource {
         return cell
     }
 }
+

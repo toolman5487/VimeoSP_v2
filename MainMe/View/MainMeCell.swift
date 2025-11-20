@@ -12,6 +12,8 @@ import SDWebImage
 
 class MainMeAvatarCell: UICollectionViewCell {
     
+    static let cellHeight: CGFloat = 120
+    
     private let preferredSize: PictureSizeType = .size100
     
     private let containerView: UIView = {
@@ -19,16 +21,24 @@ class MainMeAvatarCell: UICollectionViewCell {
         return view
     }()
     
+    private let placeholder: UIImage? = {
+        UIImage(systemName: "person.circle.fill")?.withTintColor(UIColor.vimeoWhite, renderingMode: .alwaysOriginal)
+    }()
+    
     private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 50
+        imageView.layer.cornerRadius = 40
+        imageView.image = UIImage(systemName: "person.circle.fill")?.withTintColor(UIColor.vimeoWhite, renderingMode: .alwaysOriginal)
         return imageView
     }()
     
-    private let placeholder: UIImage? = {
-        UIImage(systemName: "person.circle.fill")?.withTintColor(UIColor.vimeoWhite, renderingMode: .alwaysOriginal)
+    private let nameLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .vimeoWhite
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        return label
     }()
     
     override init(frame: CGRect) {
@@ -44,30 +54,39 @@ class MainMeAvatarCell: UICollectionViewCell {
         super.prepareForReuse()
         imageView.sd_cancelCurrentImageLoad()
         imageView.image = placeholder
+        nameLabel.text = nil
     }
     
     private func setupUI() {
         contentView.addSubview(containerView)
         containerView.addSubview(imageView)
-        
-        imageView.image = placeholder
+        containerView.addSubview(nameLabel)
         
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.edges.equalToSuperview().inset(8)
         }
         
         imageView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.size.equalTo(100)
+            make.centerY.equalToSuperview()
+            make.left.equalToSuperview().inset(8)
+            make.size.equalTo(80)
+        }
+        
+        nameLabel.snp.makeConstraints { make in
+            make.left.equalTo(imageView.snp.right).offset(16)
+            make.centerY.equalTo(imageView)
+            make.right.equalToSuperview().inset(16)
         }
     }
     
     func configure(with viewModel: MainMeViewModel) {
+        imageView.image = placeholder
+        nameLabel.text = viewModel.meModel?.name
+        
         let imageURL = viewModel.getAvatarImageURL(size: preferredSize)
         
         guard let imageURL = imageURL,
               let url = URL(string: imageURL) else {
-            imageView.image = placeholder
             return
         }
         
