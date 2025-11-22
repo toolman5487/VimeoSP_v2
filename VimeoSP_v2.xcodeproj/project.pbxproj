@@ -21,6 +21,8 @@
 		15FF4C632ECCBA2200E7888D /* MainMeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C622ECCBA2200E7888D /* MainMeService.swift */; };
 		15FF4C652ECCBADA00E7888D /* MainMeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C642ECCBADA00E7888D /* MainMeViewModel.swift */; };
 		15FF4C672ECE0CF700E7888D /* MainMeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C662ECE0CF700E7888D /* MainMeCell.swift */; };
+		15FF4C692ED20B6F00E7888D /* MainMeSubCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C682ED20B6F00E7888D /* MainMeSubCell.swift */; };
+		15FF4C6C2ED216C500E7888D /* IntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C6A2ED216C500E7888D /* IntExtension.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +38,8 @@
 		15FF4C622ECCBA2200E7888D /* MainMeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeService.swift; sourceTree = "<group>"; };
 		15FF4C642ECCBADA00E7888D /* MainMeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeViewModel.swift; sourceTree = "<group>"; };
 		15FF4C662ECE0CF700E7888D /* MainMeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeCell.swift; sourceTree = "<group>"; };
+		15FF4C682ED20B6F00E7888D /* MainMeSubCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeSubCell.swift; sourceTree = "<group>"; };
+		15FF4C6A2ED216C500E7888D /* IntExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntExtension.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -126,6 +130,7 @@
 		15FF4C492EC9A3E600E7888D /* Extension */ = {
 			isa = PBXGroup;
 			children = (
+				15FF4C6B2ED216C500E7888D /* Int */,
 				15FF4C4A2EC9A3EB00E7888D /* UIColor */,
 			);
 			path = Extension;
@@ -184,6 +189,7 @@
 			isa = PBXGroup;
 			children = (
 				15FF4C662ECE0CF700E7888D /* MainMeCell.swift */,
+				15FF4C682ED20B6F00E7888D /* MainMeSubCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -194,6 +200,14 @@
 				15FF4C472EC99C8300E7888D /* MainMeViewController.swift */,
 			);
 			path = ViewController;
+			sourceTree = "<group>";
+		};
+		15FF4C6B2ED216C500E7888D /* Int */ = {
+			isa = PBXGroup;
+			children = (
+				15FF4C6A2ED216C500E7888D /* IntExtension.swift */,
+			);
+			path = Int;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -283,9 +297,11 @@
 				15FF4C632ECCBA2200E7888D /* MainMeService.swift in Sources */,
 				15FF4C4F2ECA21E400E7888D /* APIConfig.swift in Sources */,
 				15FF4C462EC99C6100E7888D /* MainHomeViewController.swift in Sources */,
+				15FF4C6C2ED216C500E7888D /* IntExtension.swift in Sources */,
 				15FF4C572ECCA8D000E7888D /* BaseMainViewController.swift in Sources */,
 				15FF4C602ECCB91100E7888D /* MainMeModel.swift in Sources */,
 				15FF4C592ECCAD4B00E7888D /* URLConfig.swift in Sources */,
+				15FF4C692ED20B6F00E7888D /* MainMeSubCell.swift in Sources */,
 				15FF4C482EC99C8300E7888D /* MainMeViewController.swift in Sources */,
 				15FF4C672ECE0CF700E7888D /* MainMeCell.swift in Sources */,
 				15FF4C652ECCBADA00E7888D /* MainMeViewModel.swift in Sources */,
@@ -410,7 +426,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -468,7 +484,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

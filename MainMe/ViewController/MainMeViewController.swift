@@ -17,7 +17,6 @@ class MainMeViewController: BaseMainViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Me"
         setupDataSource()
         bindViewModel()
         viewModel.fetchMe()
@@ -30,12 +29,17 @@ class MainMeViewController: BaseMainViewController {
     
     private func setupDataSource() {
         collectionView.register(MainMeAvatarCell.self, forCellWithReuseIdentifier: "MainMeAvatarCell")
+        collectionView.register(MainMemetadataCell.self, forCellWithReuseIdentifier: "MainMemetadataCell")
     }
     
     private func bindViewModel() {
         viewModel.$meModel
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] meModel in
+                if let meModel = meModel {
+                    let id = meModel.uri.components(separatedBy: "/").last ?? ""
+                    self?.title = "ID: \(id)"
+                }
                 self?.collectionView.reloadData()
             }
             .store(in: &cancellables)
@@ -51,19 +55,35 @@ class MainMeViewController: BaseMainViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.frame.width, height: MainMeAvatarCell.cellHeight)
+        switch indexPath.item {
+        case 0:
+            return CGSize(width: collectionView.frame.width, height: MainMeAvatarCell.cellHeight)
+        case 1:
+            return CGSize(width: collectionView.frame.width, height: MainMemetadataCell.cellHeight)
+        default:
+            return CGSize(width: collectionView.frame.width, height: 100)
+        }
     }
 }
 
 extension MainMeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel.meModel != nil ? 1 : 0
+        return viewModel.meModel != nil ? 2 : 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeAvatarCell", for: indexPath) as! MainMeAvatarCell
-        cell.configure(with: viewModel)
-        return cell
+        switch indexPath.item {
+        case 0:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeAvatarCell", for: indexPath) as! MainMeAvatarCell
+            cell.configure(with: viewModel)
+            return cell
+        case 1:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMemetadataCell", for: indexPath) as! MainMemetadataCell
+            cell.configure(with: viewModel)
+            return cell
+        default:
+            fatalError("Unexpected indexPath")
+        }
     }
 }
 

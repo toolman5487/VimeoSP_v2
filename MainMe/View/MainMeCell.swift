@@ -10,6 +10,8 @@ import UIKit
 import SnapKit
 import SDWebImage
 
+
+// MARK: - MainMeAvatarCell
 class MainMeAvatarCell: UICollectionViewCell {
     
     static let cellHeight: CGFloat = 120
@@ -152,3 +154,88 @@ class MainMeAvatarCell: UICollectionViewCell {
         return attributedString
     }
 }
+
+// MARK: - MainMemetadataCell
+class MainMemetadataCell: UICollectionViewCell {
+    
+    static let cellHeight: CGFloat = 100
+    
+    private lazy var collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumInteritemSpacing = 16
+        layout.minimumLineSpacing = 16
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.backgroundColor = .clear
+        cv.showsHorizontalScrollIndicator = false
+        cv.delegate = self
+        cv.dataSource = self
+        cv.register(MetadataItemCell.self, forCellWithReuseIdentifier: "MetadataItemCell")
+        return cv
+    }()
+    
+    private var metadataItems: [(title: String, value: Int, icon: String)] = []
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        metadataItems = []
+        collectionView.reloadData()
+    }
+    
+    private func setupUI() {
+        contentView.addSubview(collectionView)
+        
+        collectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    func configure(with viewModel: MainMeViewModel) {
+        guard let connections = viewModel.meModel?.metadata?.connections else {
+            metadataItems = []
+            collectionView.reloadData()
+            return
+        }
+        
+        metadataItems = [
+            ("Followers", connections.followers?.total ?? 0, "person.2.fill"),
+            ("Following", connections.following?.total ?? 0, "person.2"),
+            ("Videos", connections.videos?.total ?? 0, "video.fill"),
+            ("Teams", connections.teams?.total ?? 0, "person.3.fill")
+        ]
+        
+        collectionView.reloadData()
+    }
+}
+
+extension MainMemetadataCell: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return metadataItems.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MetadataItemCell", for: indexPath) as! MetadataItemCell
+        
+        let item = metadataItems[indexPath.item]
+        cell.configure(title: item.title, value: item.value, icon: item.icon)
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: 100, height: 80)
+    }
+}
+
+
