@@ -22,6 +22,8 @@ enum PictureSizeType: Int, CaseIterable {
 
 class MainMeViewModel {
     
+    static let shared = MainMeViewModel()
+    
     private let service: MainMeServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     
@@ -29,11 +31,13 @@ class MainMeViewModel {
     @Published var isLoading = false
     @Published var error: Error?
     
-    init(service: MainMeServiceProtocol = MainMeService()) {
+    private init(service: MainMeServiceProtocol = MainMeService()) {
         self.service = service
     }
     
     func fetchMe() {
+        guard meModel == nil && !isLoading else { return }
+        
         isLoading = true
         error = nil
         

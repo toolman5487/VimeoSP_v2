@@ -12,7 +12,7 @@ import Combine
 
 class MainMeViewController: BaseMainViewController {
     
-    private let viewModel = MainMeViewModel()
+    private let viewModel = MainMeViewModel.shared
     private var cancellables = Set<AnyCancellable>()
     
     override func viewDidLoad() {

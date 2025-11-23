@@ -95,7 +95,7 @@ class MainMeAvatarCell: UICollectionViewCell {
         infoStackView.addArrangedSubview(bioLabel)
         
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
+            make.edges.equalToSuperview()
         }
         
         imageView.snp.makeConstraints { make in
@@ -140,7 +140,7 @@ class MainMeAvatarCell: UICollectionViewCell {
         }
         let imageString = NSAttributedString(attachment: imageAttachment)
         let locationString = NSAttributedString(
-            string: " \(location)",
+            string: "   \(location)",
             attributes: [
                 .foregroundColor: UIColor.vimeoWhite,
                 .font: UIFont.systemFont(ofSize: 12, weight: .semibold)
@@ -159,6 +159,7 @@ class MainMeAvatarCell: UICollectionViewCell {
 class MainMemetadataCell: UICollectionViewCell {
     
     static let cellHeight: CGFloat = 100
+    private var metadataItems: [(title: String, value: Int, icon: String)] = []
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -175,8 +176,6 @@ class MainMemetadataCell: UICollectionViewCell {
         cv.register(MetadataItemCell.self, forCellWithReuseIdentifier: "MetadataItemCell")
         return cv
     }()
-    
-    private var metadataItems: [(title: String, value: Int, icon: String)] = []
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -238,4 +237,19 @@ extension MainMemetadataCell: UICollectionViewDataSource, UICollectionViewDelega
     }
 }
 
-
+// MARK: - MainMeEntranceCell
+class MainMeEntranceCell: UICollectionViewCell{
+    
+    static let cellHeight: CGFloat = 100
+    
+    private let containerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .quaternaryLabel
+        view.layer.cornerRadius = 12
+        view.clipsToBounds = true
+        return view
+    }()
+    
+    
+    
+}

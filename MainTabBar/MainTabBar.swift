@@ -7,6 +7,8 @@
 
 import Foundation
 import UIKit
+import Combine
+import SDWebImage
 
 private enum TabBarItemColor {
     case normal
@@ -57,10 +59,13 @@ private enum MainTab: CaseIterable {
 
 class MainTabBar: UITabBarController {
     
+    private var cancellables = Set<AnyCancellable>()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTabs()
         setupGlassTabBar()
+        observeUserAvatar()
     }
     
     private func setupTabs() {
@@ -77,6 +82,66 @@ class MainTabBar: UITabBarController {
         }
         
         viewControllers = controllers
+    }
+    
+    private func observeUserAvatar() {
+        MainMeViewModel.shared.$meModel
+            .receive(on: DispatchQueue.main)
+            .compactMap { $0 }
+            .sink { [weak self] meModel in
+                self?.updateMeTabIcon(with: meModel)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func updateMeTabIcon(with meModel: MainMeModel) {
+        guard let meTabIndex = MainTab.allCases.firstIndex(of: .me),
+              let viewControllers = viewControllers,
+              meTabIndex < viewControllers.count,
+              let imageURL = MainMeViewModel.shared.getAvatarImageURL(size: .size30),
+              let url = URL(string: imageURL) else {
+            return
+        }
+        
+        let meTabBarItem = viewControllers[meTabIndex].tabBarItem
+        let id = meModel.uri.components(separatedBy: "/").last ?? ""
+        meTabBarItem?.title = "ID: \(id)"
+        
+        SDWebImageManager.shared.loadImage(
+            with: url,
+            options: [],
+            progress: nil
+        ) { [weak self] image, _, error, _, _, _ in
+            guard let self = self,
+                  let image = image,
+                  error == nil else {
+                return
+            }
+            
+            let circularImage = self.createCircularTabBarIcon(from: image)
+            
+            DispatchQueue.main.async {
+                meTabBarItem?.image = circularImage?.withRenderingMode(.alwaysOriginal)
+                meTabBarItem?.selectedImage = circularImage?.withRenderingMode(.alwaysOriginal)
+            }
+        }
+    }
+    
+    private func createCircularTabBarIcon(from image: UIImage) -> UIImage? {
+        let size: CGFloat = 30
+        let rect = CGRect(x: 0, y: 0, width: size, height: size)
+        
+        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0)
+        defer { UIGraphicsEndImageContext() }
+        
+        guard let context = UIGraphicsGetCurrentContext() else { return nil }
+        
+        context.addEllipse(in: rect)
+        context.clip()
+        
+        image.draw(in: rect)
+        
+        return UIGraphicsGetImageFromCurrentImageContext()
     }
     
     private func setupGlassTabBar() {

@@ -14,7 +14,7 @@ class MetadataItemCell: UICollectionViewCell {
     
     private let containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemGray6
+        view.backgroundColor = .quaternaryLabel
         view.layer.cornerRadius = 12
         view.clipsToBounds = true
         return view
@@ -29,9 +29,11 @@ class MetadataItemCell: UICollectionViewCell {
     
     private let valueLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        label.textColor = .label
+        label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+        label.textColor = .vimeoWhite
         label.textAlignment = .center
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.8
         return label
     }()
     
@@ -46,7 +48,7 @@ class MetadataItemCell: UICollectionViewCell {
     private lazy var stackView: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [iconImageView, valueLabel, titleLabel])
         stack.axis = .vertical
-        stack.spacing = 4
+        stack.spacing = 2
         stack.alignment = .center
         stack.distribution = .fill
         return stack
