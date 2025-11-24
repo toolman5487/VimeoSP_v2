@@ -238,18 +238,63 @@ extension MainMemetadataCell: UICollectionViewDataSource, UICollectionViewDelega
 }
 
 // MARK: - MainMeEntranceCell
-class MainMeEntranceCell: UICollectionViewCell{
+class MainMeEntranceCell: UICollectionViewCell {
     
-    static let cellHeight: CGFloat = 100
+    static let cellHeight: CGFloat = 180
     
-    private let containerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .quaternaryLabel
-        view.layer.cornerRadius = 12
-        view.clipsToBounds = true
-        return view
-    }()
+    private let collectionView = IconStatItemCollectionView()
+    var onItemTapped: ((String) -> Void)?
     
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
     
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        onItemTapped = nil
+    }
+    
+    private func setupUI() {
+        contentView.addSubview(collectionView)
+        
+        collectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    func configure(with viewModel: MainMeViewModel) {
+        guard (viewModel.meModel?.metadata?.connections) != nil else {
+            return
+        }
+        
+        let items = [
+            IconStatItemModel(title: "Videos", icon: "video.fill", path: "/me/videos"),
+            IconStatItemModel(title: "Likes", icon: "heart.fill", path: "/me/likes"),
+            IconStatItemModel(title: "Following", icon: "person.2", path: "/me/following"),
+            IconStatItemModel(title: "Albums", icon: "photo.on.rectangle", path: "/me/albums"),
+            IconStatItemModel(title: "Pictures", icon: "photo.fill", path: "/me/pictures"),
+            IconStatItemModel(title: "Channels", icon: "tv.fill", path: "/me/channels"),
+            IconStatItemModel(title: "Groups", icon: "person.3.fill", path: "/me/groups"),
+            IconStatItemModel(title: "Teams", icon: "person.3.sequence.fill", path: "/me/teams")
+        ]
+        
+        let config = IconStatItemCollectionView.Configuration(
+            items: items,
+            layoutStyle: .grid(columns: 4),
+            spacing: 12,
+            insets: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16),
+            onItemTapped: { [weak self] path in
+                if let path = path {
+                    self?.onItemTapped?(path)
+                }
+            }
+        )
+        
+        collectionView.configure(with: config)
+    }
 }

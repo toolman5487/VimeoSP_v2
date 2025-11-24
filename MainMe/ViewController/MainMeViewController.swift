@@ -30,6 +30,7 @@ class MainMeViewController: BaseMainViewController {
     private func setupDataSource() {
         collectionView.register(MainMeAvatarCell.self, forCellWithReuseIdentifier: "MainMeAvatarCell")
         collectionView.register(MainMemetadataCell.self, forCellWithReuseIdentifier: "MainMemetadataCell")
+        collectionView.register(MainMeEntranceCell.self, forCellWithReuseIdentifier: "MainMeEntranceCell")
     }
     
     private func bindViewModel() {
@@ -60,6 +61,8 @@ class MainMeViewController: BaseMainViewController {
             return CGSize(width: collectionView.frame.width, height: MainMeAvatarCell.cellHeight)
         case 1:
             return CGSize(width: collectionView.frame.width, height: MainMemetadataCell.cellHeight)
+        case 2:
+            return CGSize(width: collectionView.frame.width, height: MainMeEntranceCell.cellHeight)
         default:
             return CGSize(width: collectionView.frame.width, height: 100)
         }
@@ -68,7 +71,7 @@ class MainMeViewController: BaseMainViewController {
 
 extension MainMeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel.meModel != nil ? 2 : 0
+        return viewModel.meModel != nil ? 3 : 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -81,9 +84,20 @@ extension MainMeViewController: UICollectionViewDataSource {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMemetadataCell", for: indexPath) as! MainMemetadataCell
             cell.configure(with: viewModel)
             return cell
+        case 2:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeEntranceCell", for: indexPath) as! MainMeEntranceCell
+            cell.configure(with: viewModel)
+            cell.onItemTapped = { [weak self] path in
+                self?.handleEntranceTap(path: path)
+            }
+            return cell
         default:
             fatalError("Unexpected indexPath")
         }
+    }
+    
+    private func handleEntranceTap(path: String) {
+        print("Tapped: \(path)")
     }
 }
 

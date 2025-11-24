@@ -25,6 +25,7 @@
 		15FF4C6C2ED216C500E7888D /* IntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C6A2ED216C500E7888D /* IntExtension.swift */; };
 		15FF4C722ED354D000E7888D /* IconStatItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C712ED354D000E7888D /* IconStatItemModel.swift */; };
 		15FF4C742ED355E300E7888D /* IconStatItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C732ED355E300E7888D /* IconStatItemCell.swift */; };
+		15FF4C762ED35A7400E7888D /* IconStatItemCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C752ED35A7400E7888D /* IconStatItemCollectionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		15FF4C6A2ED216C500E7888D /* IntExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntExtension.swift; sourceTree = "<group>"; };
 		15FF4C712ED354D000E7888D /* IconStatItemModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconStatItemModel.swift; sourceTree = "<group>"; };
 		15FF4C732ED355E300E7888D /* IconStatItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconStatItemCell.swift; sourceTree = "<group>"; };
+		15FF4C752ED35A7400E7888D /* IconStatItemCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconStatItemCollectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -234,6 +236,7 @@
 		15FF4C702ED354A100E7888D /* IconStatItemCell */ = {
 			isa = PBXGroup;
 			children = (
+				15FF4C752ED35A7400E7888D /* IconStatItemCollectionView.swift */,
 				15FF4C712ED354D000E7888D /* IconStatItemModel.swift */,
 				15FF4C732ED355E300E7888D /* IconStatItemCell.swift */,
 			);
@@ -322,6 +325,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				15FF4C762ED35A7400E7888D /* IconStatItemCollectionView.swift in Sources */,
 				15FF4C422EC99C0100E7888D /* MainTabBar.swift in Sources */,
 				15FF4C4C2ECA1F1E00E7888D /* UIColorExtension.swift in Sources */,
 				15FF4C632ECCBA2200E7888D /* MainMeService.swift in Sources */,
