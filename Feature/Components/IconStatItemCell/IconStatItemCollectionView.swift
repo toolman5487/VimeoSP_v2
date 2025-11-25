@@ -11,13 +11,19 @@ import SnapKit
 
 class IconStatItemCollectionView: UICollectionViewCell {
     
+    protocol Displayable {
+        var title: String { get }
+        var iconName: String { get }
+        var path: String? { get }
+    }
+    
     enum LayoutStyle {
         case horizontal
         case grid(columns: Int)
     }
     
     struct Configuration {
-        let items: [IconStatItemModel]
+        let items: [Displayable]
         let layoutStyle: LayoutStyle
         let itemSize: CGSize?
         let spacing: CGFloat
@@ -25,7 +31,7 @@ class IconStatItemCollectionView: UICollectionViewCell {
         let onItemTapped: ((String?) -> Void)?
         
         init(
-            items: [IconStatItemModel],
+            items: [Displayable],
             layoutStyle: LayoutStyle,
             itemSize: CGSize? = nil,
             spacing: CGFloat = 12,
@@ -47,9 +53,9 @@ class IconStatItemCollectionView: UICollectionViewCell {
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 12
-        layout.minimumLineSpacing = 12
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        layout.minimumInteritemSpacing = 0
+        layout.minimumLineSpacing = 0
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
@@ -77,6 +83,10 @@ class IconStatItemCollectionView: UICollectionViewCell {
     }
     
     private func setupUI() {
+        contentView.layer.cornerRadius = 16
+        contentView.layer.masksToBounds = true
+        contentView.clipsToBounds = true
+        
         contentView.addSubview(collectionView)
         
         collectionView.snp.makeConstraints { make in
@@ -90,6 +100,43 @@ class IconStatItemCollectionView: UICollectionViewCell {
         
         updateLayout()
         collectionView.reloadData()
+    }
+    
+    func calculateHeight(for width: CGFloat) -> CGFloat {
+        guard let config = configuration else { return 0 }
+        
+        switch config.layoutStyle {
+        case .horizontal:
+            let itemHeight: CGFloat = config.itemSize?.height ?? 80
+            return itemHeight + config.insets.top + config.insets.bottom
+            
+        case .grid(let columns):
+            let itemCount = config.items.count
+            let rows = Int(ceil(Double(itemCount) / Double(columns)))
+            let itemHeight: CGFloat = config.itemSize?.height ?? 80
+            let contentHeight = CGFloat(rows) * itemHeight
+            let rowSpacing = config.spacing * CGFloat(rows - 1)
+            let verticalInsets = config.insets.top + config.insets.bottom
+            
+            return contentHeight + rowSpacing + verticalInsets
+        }
+    }
+ 
+    static func calculateHeight(for configuration: Configuration, width: CGFloat) -> CGFloat {
+        switch configuration.layoutStyle {
+        case .horizontal:
+            let itemHeight: CGFloat = configuration.itemSize?.height ?? 80
+            return itemHeight + configuration.insets.top + configuration.insets.bottom
+            
+        case .grid(let columns):
+            let itemCount = configuration.items.count
+            let rows = Int(ceil(Double(itemCount) / Double(columns)))
+            let itemHeight: CGFloat = configuration.itemSize?.height ?? 80
+            let contentHeight = CGFloat(rows) * itemHeight
+            let rowSpacing = configuration.spacing * CGFloat(rows - 1)
+            let verticalInsets = configuration.insets.top + configuration.insets.bottom
+            return contentHeight + rowSpacing + verticalInsets
+        }
     }
     
     private func updateLayout() {

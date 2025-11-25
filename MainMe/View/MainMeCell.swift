@@ -240,10 +240,28 @@ extension MainMemetadataCell: UICollectionViewDataSource, UICollectionViewDelega
 // MARK: - MainMeEntranceCell
 class MainMeEntranceCell: UICollectionViewCell {
     
-    static let cellHeight: CGFloat = 180
-    
-    private let collectionView = IconStatItemCollectionView()
     var onItemTapped: ((String) -> Void)?
+    static var cellHeight: CGFloat {
+        let screenWidth = UIScreen.main.bounds.width
+        let items = MainMeViewModel.shared.entranceItems
+        
+        let config = IconStatItemCollectionView.Configuration(
+            items: items,
+            layoutStyle: .grid(columns: 4),
+            spacing: 12,
+            insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        )
+        
+        let collectionViewWidth = screenWidth - 32
+        let collectionViewHeight = IconStatItemCollectionView.calculateHeight(for: config, width: collectionViewWidth)
+        return collectionViewHeight + 16
+    }
+    
+    private let collectionView: IconStatItemCollectionView = {
+        let view = IconStatItemCollectionView()
+        view.contentView.backgroundColor = .quaternaryLabel
+        return view
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -263,31 +281,19 @@ class MainMeEntranceCell: UICollectionViewCell {
         contentView.addSubview(collectionView)
         
         collectionView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.bottom.equalToSuperview().inset(8)
+            make.left.right.equalToSuperview().inset(16)
         }
     }
     
     func configure(with viewModel: MainMeViewModel) {
-        guard (viewModel.meModel?.metadata?.connections) != nil else {
-            return
-        }
-        
-        let items = [
-            IconStatItemModel(title: "Videos", icon: "video.fill", path: "/me/videos"),
-            IconStatItemModel(title: "Likes", icon: "heart.fill", path: "/me/likes"),
-            IconStatItemModel(title: "Following", icon: "person.2", path: "/me/following"),
-            IconStatItemModel(title: "Albums", icon: "photo.on.rectangle", path: "/me/albums"),
-            IconStatItemModel(title: "Pictures", icon: "photo.fill", path: "/me/pictures"),
-            IconStatItemModel(title: "Channels", icon: "tv.fill", path: "/me/channels"),
-            IconStatItemModel(title: "Groups", icon: "person.3.fill", path: "/me/groups"),
-            IconStatItemModel(title: "Teams", icon: "person.3.sequence.fill", path: "/me/teams")
-        ]
+        let items = viewModel.entranceItems
         
         let config = IconStatItemCollectionView.Configuration(
             items: items,
             layoutStyle: .grid(columns: 4),
             spacing: 12,
-            insets: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16),
+            insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8),
             onItemTapped: { [weak self] path in
                 if let path = path {
                     self?.onItemTapped?(path)

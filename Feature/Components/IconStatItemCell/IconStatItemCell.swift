@@ -13,7 +13,6 @@ class IconStatItemCell: UICollectionViewCell {
     
     private let containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemGray6
         view.layer.cornerRadius = 12
         view.clipsToBounds = true
         return view
@@ -76,8 +75,8 @@ class IconStatItemCell: UICollectionViewCell {
         }
     }
     
-    func configure(with model: IconStatItemModel) {
-        iconImageView.image = UIImage(systemName: model.icon)
+    func configure(with model: IconStatItemCollectionView.Displayable) {
+        iconImageView.image = UIImage(systemName: model.iconName)
         titleLabel.text = model.title
     }
 }

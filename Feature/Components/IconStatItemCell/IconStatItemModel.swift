@@ -7,11 +7,13 @@
 
 import Foundation
 
-struct IconStatItemModel {
+struct IconStatItemModel: IconStatItemCollectionView.Displayable {
     let title: String
     let value: Int?
     let icon: String
     let path: String?
+    
+    var iconName: String { return icon }
     
     init(title: String, value: Int? = nil, icon: String, path: String? = nil) {
         self.title = title
