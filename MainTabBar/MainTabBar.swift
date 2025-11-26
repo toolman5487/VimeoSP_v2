@@ -104,8 +104,8 @@ class MainTabBar: UITabBarController {
         }
         
         let meTabBarItem = viewControllers[meTabIndex].tabBarItem
-        let id = meModel.uri.components(separatedBy: "/").last ?? ""
-        meTabBarItem?.title = "ID: \(id)"
+        let name = meModel.name
+        meTabBarItem?.title = name
         
         SDWebImageManager.shared.loadImage(
             with: url,

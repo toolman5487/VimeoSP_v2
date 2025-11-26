@@ -38,8 +38,7 @@ class MainMeViewController: BaseMainViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] meModel in
                 if let meModel = meModel {
-                    let id = meModel.uri.components(separatedBy: "/").last ?? ""
-                    self?.title = "ID: \(id)"
+                    self?.title = meModel.name
                 }
                 self?.collectionView.reloadData()
             }

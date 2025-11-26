@@ -36,7 +36,7 @@ class MainMeAvatarCell: UICollectionViewCell {
         return imageView
     }()
     
-    private let nameLabel: UILabel = {
+    private let uriLabel: UILabel = {
         let label = UILabel()
         label.textColor = .vimeoWhite
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -80,7 +80,7 @@ class MainMeAvatarCell: UICollectionViewCell {
         super.prepareForReuse()
         imageView.sd_cancelCurrentImageLoad()
         imageView.image = placeholder
-        nameLabel.text = nil
+        uriLabel.text = nil
         bioLabel.text = nil
         locationLabel.attributedText = nil
     }
@@ -90,7 +90,7 @@ class MainMeAvatarCell: UICollectionViewCell {
         containerView.addSubview(imageView)
         containerView.addSubview(infoStackView)
         
-        infoStackView.addArrangedSubview(nameLabel)
+        infoStackView.addArrangedSubview(uriLabel)
         infoStackView.addArrangedSubview(locationLabel)
         infoStackView.addArrangedSubview(bioLabel)
         
@@ -113,7 +113,14 @@ class MainMeAvatarCell: UICollectionViewCell {
     
     func configure(with viewModel: MainMeViewModel) {
         imageView.image = placeholder
-        nameLabel.text = viewModel.meModel?.name
+        
+        if let uri = viewModel.meModel?.uri {
+            let id = uri.components(separatedBy: "/").last ?? ""
+            uriLabel.text = id
+        } else {
+            uriLabel.text = nil
+        }
+        
         bioLabel.text = viewModel.meModel?.bio
         
         if let location = viewModel.meModel?.location {
@@ -206,12 +213,16 @@ class MainMemetadataCell: UICollectionViewCell {
             collectionView.reloadData()
             return
         }
-        
+
         metadataItems = [
             ("Followers", connections.followers?.total ?? 0, "person.2.fill"),
             ("Following", connections.following?.total ?? 0, "person.2"),
             ("Videos", connections.videos?.total ?? 0, "video.fill"),
-            ("Teams", connections.teams?.total ?? 0, "person.3.fill")
+            ("Teams", connections.teams?.total ?? 0, "person.3.fill"),
+            ("Likes", connections.likes?.total ?? 0, "hand.thumbsup.fill"),
+            ("Watch Later", connections.watchlater?.total ?? 0, "clock.fill"),
+            ("Albums", connections.albums?.total ?? 0, "photo.on.rectangle"),
+            ("Folders", connections.folders?.total ?? 0, "folder.fill")
         ]
         
         collectionView.reloadData()
@@ -300,7 +311,6 @@ class MainMeEntranceCell: UICollectionViewCell {
                 }
             }
         )
-        
         collectionView.configure(with: config)
     }
 }
