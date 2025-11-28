@@ -128,4 +128,31 @@ class MainMeViewModel {
             IconStatItemModel(title: type.title, icon: type.icon, path: type.path)
         }
     }
+    
+    var additionalStatsItems: [IconStatItemCollectionView.Displayable] {
+        guard let connections = meModel?.metadata?.connections else {
+            return []
+        }
+        
+        return [
+            IconStatItemModel(
+                title: "Portfolios",
+                value: connections.portfolios?.total ?? 0,
+                icon: "briefcase.fill",
+                path: connections.portfolios?.uri
+            ),
+            IconStatItemModel(
+                title: "Appearances",
+                value: connections.appearances?.total ?? 0,
+                icon: "star.fill",
+                path: connections.appearances?.uri
+            ),
+            IconStatItemModel(
+                title: "Watched",
+                value: connections.watchedVideos?.total ?? 0,
+                icon: "eye.fill",
+                path: connections.watchedVideos?.uri
+            )
+        ]
+    }
 }

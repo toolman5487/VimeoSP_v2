@@ -9,12 +9,13 @@ import Foundation
 import UIKit
 import SnapKit
 
-class IconStatItemCollectionView: UICollectionViewCell {
+class IconStatItemCollectionView: UIView {
     
     protocol Displayable {
         var title: String { get }
         var iconName: String { get }
         var path: String? { get }
+        var value: Int? { get }
     }
     
     enum LayoutStyle {
@@ -76,22 +77,21 @@ class IconStatItemCollectionView: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        configuration = nil
-        collectionView.reloadData()
-    }
-    
     private func setupUI() {
-        contentView.layer.cornerRadius = 16
-        contentView.layer.masksToBounds = true
-        contentView.clipsToBounds = true
+        layer.cornerRadius = 16
+        layer.masksToBounds = true
+        clipsToBounds = true
         
-        contentView.addSubview(collectionView)
+        addSubview(collectionView)
         
         collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+    }
+    
+    func prepareForReuse() {
+        configuration = nil
+        collectionView.reloadData()
     }
     
     func configure(with configuration: Configuration) {

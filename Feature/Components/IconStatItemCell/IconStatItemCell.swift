@@ -25,6 +25,15 @@ class IconStatItemCell: UICollectionViewCell {
         return imageView
     }()
     
+    private let valueLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        label.textColor = .label
+        label.textAlignment = .center
+        label.isHidden = true
+        return label
+    }()
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
@@ -34,7 +43,7 @@ class IconStatItemCell: UICollectionViewCell {
     }()
     
     private lazy var stackView: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [iconImageView, titleLabel])
+        let stack = UIStackView(arrangedSubviews: [iconImageView, valueLabel, titleLabel])
         stack.axis = .vertical
         stack.spacing = 4
         stack.alignment = .center
@@ -55,6 +64,8 @@ class IconStatItemCell: UICollectionViewCell {
         super.prepareForReuse()
         iconImageView.image = nil
         titleLabel.text = nil
+        valueLabel.text = nil
+        valueLabel.isHidden = true
     }
     
     private func setupUI() {
@@ -78,5 +89,13 @@ class IconStatItemCell: UICollectionViewCell {
     func configure(with model: IconStatItemCollectionView.Displayable) {
         iconImageView.image = UIImage(systemName: model.iconName)
         titleLabel.text = model.title
+        
+        if let value = model.value {
+            valueLabel.text = value.formattedCount()
+            valueLabel.isHidden = false
+        } else {
+            valueLabel.text = nil
+            valueLabel.isHidden = true
+        }
     }
 }

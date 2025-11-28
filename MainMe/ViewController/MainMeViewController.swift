@@ -31,6 +31,7 @@ class MainMeViewController: BaseMainViewController {
         collectionView.register(MainMeAvatarCell.self, forCellWithReuseIdentifier: "MainMeAvatarCell")
         collectionView.register(MainMemetadataCell.self, forCellWithReuseIdentifier: "MainMemetadataCell")
         collectionView.register(MainMeEntranceCell.self, forCellWithReuseIdentifier: "MainMeEntranceCell")
+        collectionView.register(MainMeAdditionalStatsCell.self, forCellWithReuseIdentifier: "MainMeAdditionalStatsCell")
     }
     
     private func bindViewModel() {
@@ -62,6 +63,8 @@ class MainMeViewController: BaseMainViewController {
             return CGSize(width: collectionView.frame.width, height: MainMemetadataCell.cellHeight)
         case 2:
             return CGSize(width: collectionView.frame.width, height: MainMeEntranceCell.cellHeight)
+        case 3:
+            return CGSize(width: collectionView.frame.width, height: MainMeAdditionalStatsCell.cellHeight)
         default:
             return CGSize(width: collectionView.frame.width, height: 100)
         }
@@ -70,7 +73,7 @@ class MainMeViewController: BaseMainViewController {
 
 extension MainMeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel.meModel != nil ? 3 : 0
+        return viewModel.meModel != nil ? 4 : 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -89,6 +92,10 @@ extension MainMeViewController: UICollectionViewDataSource {
             cell.onItemTapped = { [weak self] path in
                 self?.handleEntranceTap(path: path)
             }
+            return cell
+        case 3:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeAdditionalStatsCell", for: indexPath) as! MainMeAdditionalStatsCell
+            cell.configure(with: viewModel)
             return cell
         default:
             fatalError("Unexpected indexPath")

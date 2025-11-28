@@ -26,11 +26,12 @@ class BaseMainViewController: UIViewController {
         refreshControl.tintColor = UIColor.vimeoWhite
         return refreshControl
     }()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.vimeoBlack
         navigationItem.largeTitleDisplayMode = .always
+        setupNavigationBarAppearance()
         setupCollectionView()
         setupRefreshControl()
     }
@@ -51,6 +52,23 @@ class BaseMainViewController: UIViewController {
     
     @objc open func refreshData() {
         refreshControl.endRefreshing()
+    }
+
+    open func setupNavigationBarAppearance() {
+        guard let navBar = navigationController?.navigationBar else { return }
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .vimeoBlue
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor.vimeoWhite,
+            .font: UIFont.systemFont(ofSize: 20, weight: .semibold)
+        ]
+        
+        navBar.standardAppearance = appearance
+        navBar.scrollEdgeAppearance = appearance
+        navBar.compactAppearance = appearance
+        navBar.tintColor = .vimeoWhite
     }
 }
 

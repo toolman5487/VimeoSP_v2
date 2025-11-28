@@ -22,3 +22,7 @@ struct IconStatItemModel: IconStatItemCollectionView.Displayable {
         self.path = path
     }
 }
+
+extension IconStatItemCollectionView.Displayable {
+    var value: Int? { return nil }
+}

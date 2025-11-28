@@ -116,7 +116,7 @@ class MainMeAvatarCell: UICollectionViewCell {
         
         if let uri = viewModel.meModel?.uri {
             let id = uri.components(separatedBy: "/").last ?? ""
-            uriLabel.text = id
+            uriLabel.text = "# \(id)"
         } else {
             uriLabel.text = nil
         }
@@ -270,7 +270,8 @@ class MainMeEntranceCell: UICollectionViewCell {
     
     private let collectionView: IconStatItemCollectionView = {
         let view = IconStatItemCollectionView()
-        view.contentView.backgroundColor = .quaternaryLabel
+        view.backgroundColor = .quaternaryLabel
+        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -310,6 +311,67 @@ class MainMeEntranceCell: UICollectionViewCell {
                     self?.onItemTapped?(path)
                 }
             }
+        )
+        collectionView.configure(with: config)
+    }
+}
+
+// MARK: - MainMeAdditionalStatsCell
+class MainMeAdditionalStatsCell: UICollectionViewCell {
+    
+    static var cellHeight: CGFloat {
+        let screenWidth = UIScreen.main.bounds.width
+        let items = MainMeViewModel.shared.additionalStatsItems
+        
+        let config = IconStatItemCollectionView.Configuration(
+            items: items,
+            layoutStyle: .grid(columns: 3),
+            spacing: 12,
+            insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        )
+        
+        let collectionViewWidth = screenWidth - 32
+        let collectionViewHeight = IconStatItemCollectionView.calculateHeight(for: config, width: collectionViewWidth)
+        return collectionViewHeight + 16
+    }
+    
+    private let collectionView: IconStatItemCollectionView = {
+        let view = IconStatItemCollectionView()
+        view.backgroundColor = .quaternaryLabel
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+    }
+    
+    private func setupUI() {
+        contentView.addSubview(collectionView)
+        
+        collectionView.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview().inset(8)
+            make.left.right.equalToSuperview().inset(16)
+        }
+    }
+    
+    func configure(with viewModel: MainMeViewModel) {
+        let items = viewModel.additionalStatsItems
+        let config = IconStatItemCollectionView.Configuration(
+            items: items,
+            layoutStyle: .grid(columns: 3),
+            spacing: 12,
+            insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8),
+            onItemTapped: nil
         )
         collectionView.configure(with: config)
     }
