@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import SnapKit
+import Combine
 
 class IconStatItemCollectionView: UIView {
     
@@ -29,27 +30,29 @@ class IconStatItemCollectionView: UIView {
         let itemSize: CGSize?
         let spacing: CGFloat
         let insets: UIEdgeInsets
-        let onItemTapped: ((String?) -> Void)?
         
         init(
             items: [Displayable],
             layoutStyle: LayoutStyle,
             itemSize: CGSize? = nil,
             spacing: CGFloat = 12,
-            insets: UIEdgeInsets = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16),
-            onItemTapped: ((String?) -> Void)? = nil
+            insets: UIEdgeInsets = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
         ) {
             self.items = items
             self.layoutStyle = layoutStyle
             self.itemSize = itemSize
             self.spacing = spacing
             self.insets = insets
-            self.onItemTapped = onItemTapped
         }
     }
     
     private var configuration: Configuration?
     private var layoutStyle: LayoutStyle = .horizontal
+    private let tapSubject = PassthroughSubject<String?, Never>()
+    
+    var tapPublisher: AnyPublisher<String?, Never> {
+        tapSubject.eraseToAnyPublisher()
+    }
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -102,26 +105,6 @@ class IconStatItemCollectionView: UIView {
         collectionView.reloadData()
     }
     
-    func calculateHeight(for width: CGFloat) -> CGFloat {
-        guard let config = configuration else { return 0 }
-        
-        switch config.layoutStyle {
-        case .horizontal:
-            let itemHeight: CGFloat = config.itemSize?.height ?? 80
-            return itemHeight + config.insets.top + config.insets.bottom
-            
-        case .grid(let columns):
-            let itemCount = config.items.count
-            let rows = Int(ceil(Double(itemCount) / Double(columns)))
-            let itemHeight: CGFloat = config.itemSize?.height ?? 80
-            let contentHeight = CGFloat(rows) * itemHeight
-            let rowSpacing = config.spacing * CGFloat(rows - 1)
-            let verticalInsets = config.insets.top + config.insets.bottom
-            
-            return contentHeight + rowSpacing + verticalInsets
-        }
-    }
- 
     static func calculateHeight(for configuration: Configuration, width: CGFloat) -> CGFloat {
         switch configuration.layoutStyle {
         case .horizontal:
@@ -197,7 +180,7 @@ extension IconStatItemCollectionView: UICollectionViewDataSource, UICollectionVi
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let item = configuration?.items[indexPath.item] {
-            configuration?.onItemTapped?(item.path)
+            tapSubject.send(item.path)
         }
     }
 }

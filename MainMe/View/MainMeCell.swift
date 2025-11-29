@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 import SDWebImage
+import Combine
 
 
 // MARK: - MainMeAvatarCell
@@ -251,7 +252,6 @@ extension MainMemetadataCell: UICollectionViewDataSource, UICollectionViewDelega
 // MARK: - MainMeEntranceCell
 class MainMeEntranceCell: UICollectionViewCell {
     
-    var onItemTapped: ((String) -> Void)?
     static var cellHeight: CGFloat {
         let screenWidth = UIScreen.main.bounds.width
         let items = MainMeViewModel.shared.entranceItems
@@ -275,6 +275,11 @@ class MainMeEntranceCell: UICollectionViewCell {
         return view
     }()
     
+    private var cancellables = Set<AnyCancellable>()
+    var tapPublisher: AnyPublisher<String?, Never> {
+        collectionView.tapPublisher
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -286,7 +291,7 @@ class MainMeEntranceCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        onItemTapped = nil
+        cancellables.removeAll()
     }
     
     private func setupUI() {
@@ -298,21 +303,21 @@ class MainMeEntranceCell: UICollectionViewCell {
         }
     }
     
-    func configure(with viewModel: MainMeViewModel) {
+    func configure(with viewModel: MainMeViewModel, onItemTapped: @escaping (String) -> Void) {
         let items = viewModel.entranceItems
-        
         let config = IconStatItemCollectionView.Configuration(
             items: items,
             layoutStyle: .grid(columns: 4),
             spacing: 12,
-            insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8),
-            onItemTapped: { [weak self] path in
-                if let path = path {
-                    self?.onItemTapped?(path)
-                }
-            }
+            insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         )
         collectionView.configure(with: config)
+        collectionView.tapPublisher
+            .compactMap { $0 }
+            .sink { path in
+                onItemTapped(path)
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -370,8 +375,7 @@ class MainMeAdditionalStatsCell: UICollectionViewCell {
             items: items,
             layoutStyle: .grid(columns: 3),
             spacing: 12,
-            insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8),
-            onItemTapped: nil
+            insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         )
         collectionView.configure(with: config)
     }

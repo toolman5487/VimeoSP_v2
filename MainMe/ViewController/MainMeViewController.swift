@@ -62,9 +62,9 @@ class MainMeViewController: BaseMainViewController {
         case 1:
             return CGSize(width: collectionView.frame.width, height: MainMemetadataCell.cellHeight)
         case 2:
-            return CGSize(width: collectionView.frame.width, height: MainMeEntranceCell.cellHeight)
-        case 3:
             return CGSize(width: collectionView.frame.width, height: MainMeAdditionalStatsCell.cellHeight)
+        case 3:
+            return CGSize(width: collectionView.frame.width, height: MainMeEntranceCell.cellHeight)
         default:
             return CGSize(width: collectionView.frame.width, height: 100)
         }
@@ -87,15 +87,14 @@ extension MainMeViewController: UICollectionViewDataSource {
             cell.configure(with: viewModel)
             return cell
         case 2:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeEntranceCell", for: indexPath) as! MainMeEntranceCell
-            cell.configure(with: viewModel)
-            cell.onItemTapped = { [weak self] path in
-                self?.handleEntranceTap(path: path)
-            }
-            return cell
-        case 3:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeAdditionalStatsCell", for: indexPath) as! MainMeAdditionalStatsCell
             cell.configure(with: viewModel)
+            return cell
+        case 3:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeEntranceCell", for: indexPath) as! MainMeEntranceCell
+            cell.configure(with: viewModel) { [weak self] path in
+                self?.handleEntranceTap(path: path)
+            }
             return cell
         default:
             fatalError("Unexpected indexPath")
