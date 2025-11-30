@@ -459,6 +459,8 @@ class MainMeContentFilterCell: UICollectionViewCell, MainMeSectionProvider {
     func configure(with viewModel: MainMeViewModel) {
         var config = TagFlowView.Configuration.default
         config.tags = viewModel.contentFilterItems
+        config.tagFontSize = 16
+        config.tagFontWeight = .semibold
         config.contentInsets = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
         tagFlowView.configure(with: config)
     }

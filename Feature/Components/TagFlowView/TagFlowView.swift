@@ -17,7 +17,11 @@ class TagFlowView: UIView {
         var tagSpacing: CGFloat
         var tagBackgroundColor: UIColor
         var tagTextColor: UIColor
-        var tagFont: UIFont
+        var tagFont: UIFont {
+            return UIFont.systemFont(ofSize: tagFontSize, weight: tagFontWeight)
+        }
+        var tagFontSize: CGFloat
+        var tagFontWeight: UIFont.Weight
         var tagCornerRadius: CGFloat
         var tagHorizontalPadding: CGFloat
         var contentInsets: UIEdgeInsets
@@ -29,7 +33,8 @@ class TagFlowView: UIView {
                 tagSpacing: 8,
                 tagBackgroundColor: .quaternaryLabel,
                 tagTextColor: .vimeoWhite,
-                tagFont: UIFont.systemFont(ofSize: 12, weight: .medium),
+                tagFontSize: 12,
+                tagFontWeight: .medium,
                 tagCornerRadius: 12,
                 tagHorizontalPadding: 12,
                 contentInsets: .zero
