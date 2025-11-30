@@ -138,7 +138,7 @@ class IconStatItemCollectionView: UIView {
             layout.minimumLineSpacing = configuration?.spacing ?? 12
             collectionView.isScrollEnabled = false
         }
-        
+    
         layout.sectionInset = configuration?.insets ?? UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
     }
 }

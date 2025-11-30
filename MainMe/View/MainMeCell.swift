@@ -11,11 +11,18 @@ import SnapKit
 import SDWebImage
 import Combine
 
-
 // MARK: - MainMeAvatarCell
-class MainMeAvatarCell: UICollectionViewCell {
+class MainMeAvatarCell: UICollectionViewCell, MainMeSectionProvider {
     
-    static let cellHeight: CGFloat = 120
+    static let identifier = "MainMeAvatarCell"
+    
+    static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
+        return viewModel.meModel != nil
+    }
+    
+    static func cellHeight(viewModel: MainMeViewModel, width: CGFloat) -> CGFloat {
+        return 120
+    }
     
     private let preferredSize: PictureSizeType = .size100
     
@@ -164,9 +171,18 @@ class MainMeAvatarCell: UICollectionViewCell {
 }
 
 // MARK: - MainMemetadataCell
-class MainMemetadataCell: UICollectionViewCell {
+class MainMemetadataCell: UICollectionViewCell, MainMeSectionProvider {
     
-    static let cellHeight: CGFloat = 100
+    static let identifier = "MainMemetadataCell"
+    
+    static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
+        return viewModel.meModel != nil
+    }
+    
+    static func cellHeight(viewModel: MainMeViewModel, width: CGFloat) -> CGFloat {
+        return 100
+    }
+    
     private var metadataItems: [(title: String, value: Int, icon: String)] = []
     
     private lazy var collectionView: UICollectionView = {
@@ -250,22 +266,29 @@ extension MainMemetadataCell: UICollectionViewDataSource, UICollectionViewDelega
 }
 
 // MARK: - MainMeEntranceCell
-class MainMeEntranceCell: UICollectionViewCell {
+class MainMeEntranceCell: UICollectionViewCell, MainMeTappableSection {
     
-    static var cellHeight: CGFloat {
-        let screenWidth = UIScreen.main.bounds.width
-        let items = MainMeViewModel.shared.entranceItems
-        
+    static let identifier = "MainMeEntranceCell"
+    
+    static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
+        return true
+    }
+    
+    static func cellHeight(viewModel: MainMeViewModel, width: CGFloat) -> CGFloat {
+        let items = viewModel.entranceItems
         let config = IconStatItemCollectionView.Configuration(
             items: items,
             layoutStyle: .grid(columns: 4),
             spacing: 12,
             insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         )
-        
-        let collectionViewWidth = screenWidth - 32
+        let collectionViewWidth = width - 32
         let collectionViewHeight = IconStatItemCollectionView.calculateHeight(for: config, width: collectionViewWidth)
         return collectionViewHeight + 16
+    }
+    
+    func configure(with viewModel: MainMeViewModel) {
+        configure(with: viewModel, onTap: { _ in })
     }
     
     private let collectionView: IconStatItemCollectionView = {
@@ -303,7 +326,7 @@ class MainMeEntranceCell: UICollectionViewCell {
         }
     }
     
-    func configure(with viewModel: MainMeViewModel, onItemTapped: @escaping (String) -> Void) {
+    func configure(with viewModel: MainMeViewModel, onTap: @escaping TapHandler) {
         let items = viewModel.entranceItems
         let config = IconStatItemCollectionView.Configuration(
             items: items,
@@ -315,27 +338,30 @@ class MainMeEntranceCell: UICollectionViewCell {
         collectionView.tapPublisher
             .compactMap { $0 }
             .sink { path in
-                onItemTapped(path)
+                onTap(path)
             }
             .store(in: &cancellables)
     }
 }
 
 // MARK: - MainMeAdditionalStatsCell
-class MainMeAdditionalStatsCell: UICollectionViewCell {
+class MainMeAdditionalStatsCell: UICollectionViewCell, MainMeSectionProvider {
     
-    static var cellHeight: CGFloat {
-        let screenWidth = UIScreen.main.bounds.width
-        let items = MainMeViewModel.shared.additionalStatsItems
-        
+    static let identifier = "MainMeAdditionalStatsCell"
+    
+    static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
+        return !viewModel.additionalStatsItems.isEmpty
+    }
+    
+    static func cellHeight(viewModel: MainMeViewModel, width: CGFloat) -> CGFloat {
+        let items = viewModel.additionalStatsItems
         let config = IconStatItemCollectionView.Configuration(
             items: items,
             layoutStyle: .grid(columns: 3),
             spacing: 12,
             insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         )
-        
-        let collectionViewWidth = screenWidth - 32
+        let collectionViewWidth = width - 32
         let collectionViewHeight = IconStatItemCollectionView.calculateHeight(for: config, width: collectionViewWidth)
         return collectionViewHeight + 16
     }
@@ -378,5 +404,62 @@ class MainMeAdditionalStatsCell: UICollectionViewCell {
             insets: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         )
         collectionView.configure(with: config)
+    }
+}
+
+// MARK: - MainMeContentFilterCell
+class MainMeContentFilterCell: UICollectionViewCell, MainMeSectionProvider {
+    
+    static let identifier = "MainMeContentFilterCell"
+    
+    static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
+        return !viewModel.contentFilterItems.isEmpty
+    }
+    
+    static func cellHeight(viewModel: MainMeViewModel, width: CGFloat) -> CGFloat {
+        return 80
+    }
+    
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Content Filter"
+        label.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+        label.textColor = .vimeoWhite
+        return label
+    }()
+    
+    private let tagFlowView = TagFlowView()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupUI() {
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(tagFlowView)
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.left.right.equalToSuperview().inset(16)
+        }
+        
+        tagFlowView.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom)
+            make.left.right.equalToSuperview()
+            make.height.equalTo(28)
+            make.bottom.equalToSuperview().inset(16)
+        }
+    }
+    
+    func configure(with viewModel: MainMeViewModel) {
+        var config = TagFlowView.Configuration.default
+        config.tags = viewModel.contentFilterItems
+        config.contentInsets = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
+        tagFlowView.configure(with: config)
     }
 }

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15A35AC92EDC2098005C25CC /* TagFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A35AC72EDC2098005C25CC /* TagFlowView.swift */; };
+		15A35ACC2EDC3D08005C25CC /* MainMeSectionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A35ACA2EDC3D08005C25CC /* MainMeSectionProvider.swift */; };
 		15FF4C3C2EC9975A00E7888D /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 15FF4C3B2EC9975A00E7888D /* SnapKit */; };
 		15FF4C3F2EC9976700E7888D /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 15FF4C3E2EC9976700E7888D /* SDWebImage */; };
 		15FF4C422EC99C0100E7888D /* MainTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C412EC99C0100E7888D /* MainTabBar.swift */; };
@@ -29,6 +31,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		15A35AC72EDC2098005C25CC /* TagFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagFlowView.swift; sourceTree = "<group>"; };
+		15A35ACA2EDC3D08005C25CC /* MainMeSectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeSectionProvider.swift; sourceTree = "<group>"; };
 		15FF4C222EC9937000E7888D /* VimeoSP_v2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VimeoSP_v2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		15FF4C412EC99C0100E7888D /* MainTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBar.swift; sourceTree = "<group>"; };
 		15FF4C452EC99C6100E7888D /* MainHomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeViewController.swift; sourceTree = "<group>"; };
@@ -83,6 +87,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		15A35AC82EDC2098005C25CC /* TagFlowView */ = {
+			isa = PBXGroup;
+			children = (
+				15A35AC72EDC2098005C25CC /* TagFlowView.swift */,
+			);
+			path = TagFlowView;
+			sourceTree = "<group>";
+		};
+		15A35ACB2EDC3D08005C25CC /* Protocol */ = {
+			isa = PBXGroup;
+			children = (
+				15A35ACA2EDC3D08005C25CC /* MainMeSectionProvider.swift */,
+			);
+			path = Protocol;
+			sourceTree = "<group>";
+		};
 		15FF4C192EC9937000E7888D = {
 			isa = PBXGroup;
 			children = (
@@ -124,6 +144,7 @@
 		15FF4C442EC99C4600E7888D /* MainMe */ = {
 			isa = PBXGroup;
 			children = (
+				15A35ACB2EDC3D08005C25CC /* Protocol */,
 				15FF4C5E2ECCB8F900E7888D /* ViewController */,
 				15FF4C5D2ECCB8EE00E7888D /* View */,
 				15FF4C5C2ECCB8E300E7888D /* ViewModel */,
@@ -228,6 +249,7 @@
 		15FF4C6F2ED353C600E7888D /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				15A35AC82EDC2098005C25CC /* TagFlowView */,
 				15FF4C702ED354A100E7888D /* IconStatItemCell */,
 			);
 			path = Components;
@@ -328,12 +350,14 @@
 				15FF4C762ED35A7400E7888D /* IconStatItemCollectionView.swift in Sources */,
 				15FF4C422EC99C0100E7888D /* MainTabBar.swift in Sources */,
 				15FF4C4C2ECA1F1E00E7888D /* UIColorExtension.swift in Sources */,
+				15A35AC92EDC2098005C25CC /* TagFlowView.swift in Sources */,
 				15FF4C632ECCBA2200E7888D /* MainMeService.swift in Sources */,
 				15FF4C742ED355E300E7888D /* IconStatItemCell.swift in Sources */,
 				15FF4C4F2ECA21E400E7888D /* APIConfig.swift in Sources */,
 				15FF4C462EC99C6100E7888D /* MainHomeViewController.swift in Sources */,
 				15FF4C6C2ED216C500E7888D /* IntExtension.swift in Sources */,
 				15FF4C572ECCA8D000E7888D /* BaseMainViewController.swift in Sources */,
+				15A35ACC2EDC3D08005C25CC /* MainMeSectionProvider.swift in Sources */,
 				15FF4C602ECCB91100E7888D /* MainMeModel.swift in Sources */,
 				15FF4C592ECCAD4B00E7888D /* URLConfig.swift in Sources */,
 				15FF4C692ED20B6F00E7888D /* MainMeSubCell.swift in Sources */,

@@ -155,4 +155,8 @@ class MainMeViewModel {
             )
         ]
     }
+    
+    var contentFilterItems: [String] {
+        return meModel?.contentFilter ?? []
+    }
 }

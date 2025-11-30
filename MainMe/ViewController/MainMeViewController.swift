@@ -15,9 +15,21 @@ class MainMeViewController: BaseMainViewController {
     private let viewModel = MainMeViewModel.shared
     private var cancellables = Set<AnyCancellable>()
     
+    private let allSections: [MainMeSectionProvider.Type] = [
+        MainMeAvatarCell.self,
+        MainMemetadataCell.self,
+        MainMeAdditionalStatsCell.self,
+        MainMeEntranceCell.self,
+        MainMeContentFilterCell.self
+    ]
+    
+    private var visibleSections: [MainMeSectionProvider.Type] {
+        allSections.filter { $0.shouldDisplay(viewModel: viewModel) }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupDataSource()
+        registerCells()
         bindViewModel()
         viewModel.fetchMe()
     }
@@ -27,11 +39,10 @@ class MainMeViewController: BaseMainViewController {
         collectionView.dataSource = self
     }
     
-    private func setupDataSource() {
-        collectionView.register(MainMeAvatarCell.self, forCellWithReuseIdentifier: "MainMeAvatarCell")
-        collectionView.register(MainMemetadataCell.self, forCellWithReuseIdentifier: "MainMemetadataCell")
-        collectionView.register(MainMeEntranceCell.self, forCellWithReuseIdentifier: "MainMeEntranceCell")
-        collectionView.register(MainMeAdditionalStatsCell.self, forCellWithReuseIdentifier: "MainMeAdditionalStatsCell")
+    private func registerCells() {
+        allSections.forEach { cellType in
+            collectionView.register(cellType, forCellWithReuseIdentifier: cellType.identifier)
+        }
     }
     
     private func bindViewModel() {
@@ -56,53 +67,35 @@ class MainMeViewController: BaseMainViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        switch indexPath.item {
-        case 0:
-            return CGSize(width: collectionView.frame.width, height: MainMeAvatarCell.cellHeight)
-        case 1:
-            return CGSize(width: collectionView.frame.width, height: MainMemetadataCell.cellHeight)
-        case 2:
-            return CGSize(width: collectionView.frame.width, height: MainMeAdditionalStatsCell.cellHeight)
-        case 3:
-            return CGSize(width: collectionView.frame.width, height: MainMeEntranceCell.cellHeight)
-        default:
-            return CGSize(width: collectionView.frame.width, height: 100)
-        }
+        let cellType = visibleSections[indexPath.item]
+        let width = collectionView.frame.width
+        let height = cellType.cellHeight(viewModel: viewModel, width: width)
+        return CGSize(width: width, height: height)
     }
 }
 
 extension MainMeViewController: UICollectionViewDataSource {
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel.meModel != nil ? 4 : 0
+        return visibleSections.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        switch indexPath.item {
-        case 0:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeAvatarCell", for: indexPath) as! MainMeAvatarCell
-            cell.configure(with: viewModel)
-            return cell
-        case 1:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMemetadataCell", for: indexPath) as! MainMemetadataCell
-            cell.configure(with: viewModel)
-            return cell
-        case 2:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeAdditionalStatsCell", for: indexPath) as! MainMeAdditionalStatsCell
-            cell.configure(with: viewModel)
-            return cell
-        case 3:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainMeEntranceCell", for: indexPath) as! MainMeEntranceCell
-            cell.configure(with: viewModel) { [weak self] path in
-                self?.handleEntranceTap(path: path)
+        let cellType = visibleSections[indexPath.item]
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellType.identifier, for: indexPath)
+        
+        if let tappableCell = cell as? MainMeTappableSection {
+            tappableCell.configure(with: viewModel) { [weak self] path in
+                self?.handleTap(path: path)
             }
-            return cell
-        default:
-            fatalError("Unexpected indexPath")
+        } else if let configurableCell = cell as? MainMeSectionProvider {
+            configurableCell.configure(with: viewModel)
         }
+        
+        return cell
     }
     
-    private func handleEntranceTap(path: String) {
+    private func handleTap(path: String) {
         print("Tapped: \(path)")
     }
 }
-
