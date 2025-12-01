@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15987CF32EDDDDDD00242C99 /* HomeSearchResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15987CF22EDDDDDD00242C99 /* HomeSearchResultsViewController.swift */; };
 		15A35AC92EDC2098005C25CC /* TagFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A35AC72EDC2098005C25CC /* TagFlowView.swift */; };
 		15A35ACC2EDC3D08005C25CC /* MainMeSectionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A35ACA2EDC3D08005C25CC /* MainMeSectionProvider.swift */; };
 		15FF4C3C2EC9975A00E7888D /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 15FF4C3B2EC9975A00E7888D /* SnapKit */; };
@@ -31,6 +32,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		15987CF22EDDDDDD00242C99 /* HomeSearchResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSearchResultsViewController.swift; sourceTree = "<group>"; };
 		15A35AC72EDC2098005C25CC /* TagFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagFlowView.swift; sourceTree = "<group>"; };
 		15A35ACA2EDC3D08005C25CC /* MainMeSectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMeSectionProvider.swift; sourceTree = "<group>"; };
 		15FF4C222EC9937000E7888D /* VimeoSP_v2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VimeoSP_v2.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -87,6 +89,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		15987CF12EDDDDB800242C99 /* ViewController */ = {
+			isa = PBXGroup;
+			children = (
+				15FF4C452EC99C6100E7888D /* MainHomeViewController.swift */,
+				15987CF22EDDDDDD00242C99 /* HomeSearchResultsViewController.swift */,
+			);
+			path = ViewController;
+			sourceTree = "<group>";
+		};
 		15A35AC82EDC2098005C25CC /* TagFlowView */ = {
 			isa = PBXGroup;
 			children = (
@@ -136,7 +147,7 @@
 		15FF4C432EC99C3F00E7888D /* MainHome */ = {
 			isa = PBXGroup;
 			children = (
-				15FF4C452EC99C6100E7888D /* MainHomeViewController.swift */,
+				15987CF12EDDDDB800242C99 /* ViewController */,
 			);
 			path = MainHome;
 			sourceTree = "<group>";
@@ -364,6 +375,7 @@
 				15FF4C482EC99C8300E7888D /* MainMeViewController.swift in Sources */,
 				15FF4C672ECE0CF700E7888D /* MainMeCell.swift in Sources */,
 				15FF4C722ED354D000E7888D /* IconStatItemModel.swift in Sources */,
+				15987CF32EDDDDDD00242C99 /* HomeSearchResultsViewController.swift in Sources */,
 				15FF4C652ECCBADA00E7888D /* MainMeViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

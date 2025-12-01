@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 
-class MainHomeViewController: BaseMainViewController{
+class MainHomeViewController: BaseMainViewController {
     
     private enum LogoConfig {
         static let maxWidth: CGFloat = 100
@@ -17,9 +17,20 @@ class MainHomeViewController: BaseMainViewController{
         static let imageName = "Vimeo Wordmark_White"
     }
     
+    private lazy var resultsVC = HomeSearchResultsViewController()
+    private lazy var searchController: UISearchController = {
+        let controller = UISearchController(searchResultsController: resultsVC)
+        controller.obscuresBackgroundDuringPresentation = false
+        controller.hidesNavigationBarDuringPresentation = false
+        controller.searchBar.placeholder = "Search videos"
+        return controller
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavBar()
+        navigationItem.searchController = searchController
+        definesPresentationContext = true
     }
     
     private func setupNavBar() {
@@ -44,7 +55,7 @@ class MainHomeViewController: BaseMainViewController{
     }
     
     private func setupSearchButton() {
-        let config = UIImage.SymbolConfiguration(weight: .semibold)
+        let config = UIImage.SymbolConfiguration(weight: .black)
         let searchImage = UIImage(systemName: "magnifyingglass", withConfiguration: config)
         
         let searchButton = UIBarButtonItem(
@@ -58,6 +69,9 @@ class MainHomeViewController: BaseMainViewController{
     }
     
     @objc private func searchButtonTapped() {
-        print("Search button tapped")
+        searchController.isActive = true
+        DispatchQueue.main.async {
+            self.searchController.searchBar.becomeFirstResponder()
+        }
     }
 }
