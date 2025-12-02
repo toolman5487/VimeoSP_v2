@@ -11,15 +11,28 @@ import SnapKit
 
 class HomeSearchResultsViewController: UIViewController {
     
+    private let searchBar = UISearchBar()
     private let tableView = UITableView()
     
-    private var results: [String] = ["a","a","a","a","a","b","b","b","b","b","b","b"]
+    private var results: [String] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        title = "Search"
+        view.backgroundColor = .vimeoBlack
+        setupSearchBar()
         setupViews()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        searchBar.becomeFirstResponder()
+    }
+    
+    private func setupSearchBar() {
+        searchBar.placeholder = "Search videos"
+        searchBar.delegate = self
+        searchBar.searchBarStyle = .minimal
+        navigationItem.titleView = searchBar
     }
     
     private func setupViews() {
@@ -44,6 +57,21 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         cell.textLabel?.text = results[indexPath.row]
         return cell
+    }
+}
+
+// MARK: - UISearchBarDelegate
+extension HomeSearchResultsViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        print("Searching: \(searchText)")
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        navigationController?.popViewController(animated: true)
     }
 }
 

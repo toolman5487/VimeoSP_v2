@@ -31,6 +31,7 @@ class BaseMainViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = UIColor.vimeoBlack
         navigationItem.largeTitleDisplayMode = .always
+        navigationItem.backButtonDisplayMode = .minimal
         setupNavigationBarAppearance()
         setupCollectionView()
         setupRefreshControl()

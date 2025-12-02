@@ -17,20 +17,9 @@ class MainHomeViewController: BaseMainViewController {
         static let imageName = "Vimeo Wordmark_White"
     }
     
-    private lazy var resultsVC = HomeSearchResultsViewController()
-    private lazy var searchController: UISearchController = {
-        let controller = UISearchController(searchResultsController: resultsVC)
-        controller.obscuresBackgroundDuringPresentation = false
-        controller.hidesNavigationBarDuringPresentation = false
-        controller.searchBar.placeholder = "Search videos"
-        return controller
-    }()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavBar()
-        navigationItem.searchController = searchController
-        definesPresentationContext = true
     }
     
     private func setupNavBar() {
@@ -69,9 +58,7 @@ class MainHomeViewController: BaseMainViewController {
     }
     
     @objc private func searchButtonTapped() {
-        searchController.isActive = true
-        DispatchQueue.main.async {
-            self.searchController.searchBar.becomeFirstResponder()
-        }
+        let resultsVC = HomeSearchResultsViewController()
+        navigationController?.pushViewController(resultsVC, animated: true)
     }
 }
