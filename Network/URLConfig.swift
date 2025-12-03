@@ -45,3 +45,19 @@ enum MePath {
     }
 }
 
+enum SearchPath {
+    case videos
+    case users
+    case channels
+    case groups
+    
+    var path: String {
+        switch self {
+        case .videos: return "/videos"
+        case .users: return "/users"
+        case .channels: return "/channels"
+        case .groups: return "/groups"
+        }
+    }
+}
+
