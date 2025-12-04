@@ -52,16 +52,17 @@ class HomeSearchResultsViewController: UIViewController {
     }
     
     private func setupSearchBar() {
-        searchBar.placeholder = "Search videos, users, channels..."
         searchBar.delegate = self
         searchBar.searchBarStyle = .minimal
         searchBar.returnKeyType = .search
         navigationItem.titleView = searchBar
         
-        if let textField = searchBar.value(forKey: "searchField") as? UITextField {
-            textField.textColor = .vimeoWhite
-            textField.backgroundColor = UIColor.vimeoWhite.withAlphaComponent(0.1)
-        }
+        searchBar.searchTextField.textColor = .systemBackground
+        searchBar.searchTextField.backgroundColor = .label
+        searchBar.searchTextField.attributedPlaceholder = NSAttributedString(
+            string: "Search videos, users, channels...",
+            attributes: [.foregroundColor: UIColor.darkGray.withAlphaComponent(0.5)]
+        )
     }
     
     private func setupViews() {

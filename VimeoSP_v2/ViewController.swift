@@ -51,7 +51,7 @@ class ViewController: UIViewController {
         }
 
         UIView.transition(with: window,
-                          duration: 0.4,
+                          duration: 0.2,
                           options: .transitionCrossDissolve,
                           animations: { [weak self] in
             self?.navigationController?.setViewControllers([mainTabBar], animated: false)
