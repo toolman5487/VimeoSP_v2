@@ -15,7 +15,6 @@ class HomeSearchResultsViewController: UIViewController {
     
     private let viewModel = HomeSearchViewModel()
     private var cancellables = Set<AnyCancellable>()
-    private var searchSubject = PassthroughSubject<String, Never>()
     
     private let searchBar = UISearchBar()
     private let tableView = UITableView()
@@ -112,18 +111,6 @@ class HomeSearchResultsViewController: UIViewController {
     }
     
     private func setupBindings() {
-        searchSubject
-            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-            .sink { [weak self] query in
-                guard let self = self else { return }
-                if query.isEmpty {
-                    self.viewModel.clearSearch()
-                } else {
-                    self.viewModel.search(query: query, type: .videos)
-                }
-            }
-            .store(in: &cancellables)
-        
         viewModel.$searchResults
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -212,13 +199,13 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
 
 extension HomeSearchResultsViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        searchSubject.send(searchText)
+        viewModel.searchQuery = searchText
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let query = searchBar.text, !query.isEmpty else { return }
         searchBar.resignFirstResponder()
-        searchSubject.send(query)
+        viewModel.search(query: query, type: .videos)
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {

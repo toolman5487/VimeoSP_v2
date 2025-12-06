@@ -8,31 +8,43 @@
 import Foundation
 import Combine
 
-class HomeSearchViewModel {
+final class HomeSearchViewModel {
+    
+    // MARK: - Published Properties
+    
+    @Published private(set) var searchResults: [VimeoVideo] = []
+    @Published private(set) var isLoading = false
+    @Published private(set) var error: Error?
+    @Published private(set) var currentQuery = ""
+    @Published private(set) var hasMorePages = false
+    @Published var searchQuery = ""
+    
+    // MARK: - Private Properties
     
     private let service: HomeSearchServiceProtocol
+    private let perPage = 20
     private var cancellables = Set<AnyCancellable>()
+    private var searchCancellable: AnyCancellable?
+    private var currentType: SearchPath = .videos
+    private var currentPage = 1
+    private var total = 0
     
-    @Published var searchResults: [VimeoVideo] = []
-    @Published var isLoading = false
-    @Published var error: Error?
-    @Published var currentQuery: String = ""
-    @Published var currentType: SearchPath = .videos
-    @Published var currentPage: Int = 1
-    @Published var total: Int = 0
-    @Published var hasMorePages: Bool = false
-    
-    private let perPage: Int = 20
+    // MARK: - Initialization
     
     init(service: HomeSearchServiceProtocol = HomeSearchService()) {
         self.service = service
+        setupSearchQueryBinding()
     }
+    
+    // MARK: - Public Methods
     
     func search(query: String, type: SearchPath = .videos) {
         guard !query.isEmpty else {
             searchResults = []
             return
         }
+        
+        searchCancellable?.cancel()
         
         currentQuery = query
         currentType = type
@@ -41,7 +53,7 @@ class HomeSearchViewModel {
         isLoading = true
         error = nil
         
-        service.search(query: query, type: type, page: currentPage, perPage: perPage)
+        searchCancellable = service.search(query: query, type: type, page: currentPage, perPage: perPage)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -51,17 +63,16 @@ class HomeSearchViewModel {
                     }
                 },
                 receiveValue: { [weak self] response in
-                    guard let self = self else { return }
-                    self.searchResults = response.data ?? []
-                    self.total = response.total ?? 0
-                    self.hasMorePages = self.checkHasMorePages(response: response)
+                    guard let self else { return }
+                    searchResults = response.data ?? []
+                    total = response.total ?? 0
+                    hasMorePages = checkHasMorePages(response: response)
                 }
             )
-            .store(in: &cancellables)
     }
     
     func loadMore() {
-        guard !isLoading && hasMorePages && !currentQuery.isEmpty else { return }
+        guard !isLoading, hasMorePages, !currentQuery.isEmpty else { return }
         
         isLoading = true
         let nextPage = currentPage + 1
@@ -76,12 +87,12 @@ class HomeSearchViewModel {
                     }
                 },
                 receiveValue: { [weak self] response in
-                    guard let self = self else { return }
+                    guard let self else { return }
                     if let newData = response.data {
-                        self.searchResults.append(contentsOf: newData)
+                        searchResults.append(contentsOf: newData)
                     }
-                    self.currentPage = nextPage
-                    self.hasMorePages = self.checkHasMorePages(response: response)
+                    currentPage = nextPage
+                    hasMorePages = checkHasMorePages(response: response)
                 }
             )
             .store(in: &cancellables)
@@ -94,6 +105,48 @@ class HomeSearchViewModel {
         total = 0
         hasMorePages = false
         error = nil
+    }
+    
+    // MARK: - Private Methods
+    
+    private func setupSearchQueryBinding() {
+        $searchQuery
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .removeDuplicates()
+            .sink { [weak self] query in
+                guard let self else { return }
+                searchCancellable?.cancel()
+                
+                if query.isEmpty {
+                    clearSearch()
+                    return
+                }
+                
+                currentQuery = query
+                currentType = .videos
+                currentPage = 1
+                searchResults = []
+                isLoading = true
+                error = nil
+                
+                searchCancellable = service.search(query: query, type: .videos, page: 1, perPage: perPage)
+                    .receive(on: DispatchQueue.main)
+                    .sink(
+                        receiveCompletion: { [weak self] completion in
+                            self?.isLoading = false
+                            if case .failure(let error) = completion {
+                                self?.error = error
+                            }
+                        },
+                        receiveValue: { [weak self] response in
+                            guard let self else { return }
+                            searchResults = response.data ?? []
+                            total = response.total ?? 0
+                            hasMorePages = checkHasMorePages(response: response)
+                        }
+                    )
+            }
+            .store(in: &cancellables)
     }
     
     private func checkHasMorePages(response: VimeoSearchResponse) -> Bool {
