@@ -16,9 +16,23 @@ class HomeSearchResultsViewController: UIViewController {
     private let viewModel = HomeSearchViewModel()
     private var cancellables = Set<AnyCancellable>()
     
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let footerLoadingIndicator = UIActivityIndicatorView(style: .medium)
+    
     private let searchBar = UISearchBar()
-    private let tableView = UITableView()
-    private let loadingIndicator = UIActivityIndicatorView(style: .medium)
+    
+    private let tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.backgroundColor = .vimeoBlack
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = .gray.withAlphaComponent(0.3)
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
+        tableView.alwaysBounceVertical = true
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.sectionHeaderHeight = UITableView.automaticDimension
+        tableView.keyboardDismissMode = .onDrag
+        return tableView
+    }()
     
     private let emptyStateView: UIView = {
         let view = UIView()
@@ -81,12 +95,21 @@ class HomeSearchResultsViewController: UIViewController {
         
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.backgroundColor = .vimeoBlack
-        tableView.separatorStyle = .none
         tableView.register(SearchResultCell.self, forCellReuseIdentifier: "SearchResultCell")
-        
-        let footer = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 50))
+        setupFooterLoadingView()
+    }
+    
+    private func setupFooterLoadingView() {
+        let footer = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 60))
         footer.backgroundColor = .clear
+        
+        footer.addSubview(footerLoadingIndicator)
+        footerLoadingIndicator.color = .vimeoBlue
+        footerLoadingIndicator.hidesWhenStopped = true
+        footerLoadingIndicator.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        
         tableView.tableFooterView = footer
     }
     
@@ -122,12 +145,24 @@ class HomeSearchResultsViewController: UIViewController {
         viewModel.$isLoading
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isLoading in
-                if isLoading {
-                    self?.loadingIndicator.startAnimating()
+                guard let self else { return }
+                if isLoading && viewModel.searchResults.isEmpty {
+                    loadingIndicator.startAnimating()
                 } else {
-                    self?.loadingIndicator.stopAnimating()
+                    loadingIndicator.stopAnimating()
                 }
-                self?.updateEmptyState()
+                updateEmptyState()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$isLoadingMore
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLoadingMore in
+                if isLoadingMore {
+                    self?.footerLoadingIndicator.startAnimating()
+                } else {
+                    self?.footerLoadingIndicator.stopAnimating()
+                }
             }
             .store(in: &cancellables)
         
@@ -142,7 +177,7 @@ class HomeSearchResultsViewController: UIViewController {
     }
     
     private func updateEmptyState() {
-        let isEmpty = viewModel.searchResults.isEmpty && !viewModel.isLoading && !viewModel.currentQuery.isEmpty
+        let isEmpty = viewModel.searchResults.isEmpty && !viewModel.isLoading && !viewModel.isLoadingMore && !viewModel.currentQuery.isEmpty
         emptyStateView.isHidden = !isEmpty
         
         if isEmpty {
@@ -190,7 +225,7 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
         let height = scrollView.frame.size.height
         
         if offsetY > contentHeight - height - 200 {
-            if viewModel.hasMorePages && !viewModel.isLoading {
+            if viewModel.hasMorePages && !viewModel.isLoading && !viewModel.isLoadingMore {
                 viewModel.loadMore()
             }
         }

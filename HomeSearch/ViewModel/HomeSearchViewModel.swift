@@ -14,6 +14,7 @@ final class HomeSearchViewModel {
     
     @Published private(set) var searchResults: [VimeoVideo] = []
     @Published private(set) var isLoading = false
+    @Published private(set) var isLoadingMore = false
     @Published private(set) var error: Error?
     @Published private(set) var currentQuery = ""
     @Published private(set) var hasMorePages = false
@@ -22,12 +23,13 @@ final class HomeSearchViewModel {
     // MARK: - Private Properties
     
     private let service: HomeSearchServiceProtocol
-    private let perPage = 20
+    private let perPage = 10
     private var cancellables = Set<AnyCancellable>()
     private var searchCancellable: AnyCancellable?
     private var currentType: SearchPath = .videos
     private var currentPage = 1
     private var total = 0
+    private var searchCache: [String: [VimeoVideo]] = [:]
     
     // MARK: - Initialization
     
@@ -72,16 +74,16 @@ final class HomeSearchViewModel {
     }
     
     func loadMore() {
-        guard !isLoading, hasMorePages, !currentQuery.isEmpty else { return }
+        guard !isLoading, !isLoadingMore, hasMorePages, !currentQuery.isEmpty else { return }
         
-        isLoading = true
+        isLoadingMore = true
         let nextPage = currentPage + 1
         
         service.search(query: currentQuery, type: currentType, page: nextPage, perPage: perPage)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
+                    self?.isLoadingMore = false
                     if case .failure(let error) = completion {
                         self?.error = error
                     }
@@ -104,6 +106,7 @@ final class HomeSearchViewModel {
         currentPage = 1
         total = 0
         hasMorePages = false
+        isLoadingMore = false
         error = nil
     }
     
@@ -111,7 +114,7 @@ final class HomeSearchViewModel {
     
     private func setupSearchQueryBinding() {
         $searchQuery
-            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
             .removeDuplicates()
             .sink { [weak self] query in
                 guard let self else { return }
@@ -125,7 +128,15 @@ final class HomeSearchViewModel {
                 currentQuery = query
                 currentType = .videos
                 currentPage = 1
-                searchResults = []
+                
+                if let cachedResults = searchCache[query] {
+                    searchResults = cachedResults
+                    isLoading = false
+                    total = cachedResults.count
+                    hasMorePages = false
+                    return
+                }
+                
                 isLoading = true
                 error = nil
                 
@@ -140,9 +151,15 @@ final class HomeSearchViewModel {
                         },
                         receiveValue: { [weak self] response in
                             guard let self else { return }
-                            searchResults = response.data ?? []
+                            let results = response.data ?? []
+                            searchResults = results
                             total = response.total ?? 0
                             hasMorePages = checkHasMorePages(response: response)
+                            
+                            if searchCache.count >= 10, let firstKey = searchCache.keys.first {
+                                searchCache.removeValue(forKey: firstKey)
+                            }
+                            searchCache[query] = results
                         }
                     )
             }
