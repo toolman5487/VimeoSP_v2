@@ -10,6 +10,14 @@ import Combine
 
 final class HomeSearchViewModel {
     
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let debounceMilliseconds = 200
+        static let perPage = 10
+        static let maxCacheSize = 10
+    }
+    
     // MARK: - Published Properties
     
     @Published private(set) var searchResults: [VimeoVideo] = []
@@ -23,7 +31,6 @@ final class HomeSearchViewModel {
     // MARK: - Private Properties
     
     private let service: HomeSearchServiceProtocol
-    private let perPage = 10
     private var cancellables = Set<AnyCancellable>()
     private var searchCancellable: AnyCancellable?
     private var currentType: SearchPath = .videos
@@ -47,39 +54,19 @@ final class HomeSearchViewModel {
         }
         
         searchCancellable?.cancel()
-        
-        currentQuery = query
-        currentType = type
-        currentPage = 1
-        searchResults = []
+        resetSearchState(query: query, type: type)
         isLoading = true
-        error = nil
         
-        searchCancellable = service.search(query: query, type: type, page: currentPage, perPage: perPage)
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
-                    if case .failure(let error) = completion {
-                        self?.error = error
-                    }
-                },
-                receiveValue: { [weak self] response in
-                    guard let self else { return }
-                    searchResults = response.data ?? []
-                    total = response.total ?? 0
-                    hasMorePages = checkHasMorePages(response: response)
-                }
-            )
+        performSearch(query: query, type: type, page: currentPage)
     }
     
     func loadMore() {
-        guard !isLoading, !isLoadingMore, hasMorePages, !currentQuery.isEmpty else { return }
+        guard canLoadMore else { return }
         
         isLoadingMore = true
         let nextPage = currentPage + 1
         
-        service.search(query: currentQuery, type: currentType, page: nextPage, perPage: perPage)
+        service.search(query: currentQuery, type: currentType, page: nextPage, perPage: Constants.perPage)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -89,12 +76,7 @@ final class HomeSearchViewModel {
                     }
                 },
                 receiveValue: { [weak self] response in
-                    guard let self else { return }
-                    if let newData = response.data {
-                        searchResults.append(contentsOf: newData)
-                    }
-                    currentPage = nextPage
-                    hasMorePages = checkHasMorePages(response: response)
+                    self?.handleLoadMoreResponse(response, nextPage: nextPage)
                 }
             )
             .store(in: &cancellables)
@@ -110,60 +92,112 @@ final class HomeSearchViewModel {
         error = nil
     }
     
+    // MARK: - Private Computed Properties
+    
+    private var canLoadMore: Bool {
+        !isLoading && !isLoadingMore && hasMorePages && !currentQuery.isEmpty
+    }
+    
     // MARK: - Private Methods
     
     private func setupSearchQueryBinding() {
         $searchQuery
-            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
+            .debounce(for: .milliseconds(Constants.debounceMilliseconds), scheduler: DispatchQueue.main)
             .removeDuplicates()
             .sink { [weak self] query in
-                guard let self else { return }
-                searchCancellable?.cancel()
-                
-                if query.isEmpty {
-                    clearSearch()
-                    return
-                }
-                
-                currentQuery = query
-                currentType = .videos
-                currentPage = 1
-                
-                if let cachedResults = searchCache[query] {
-                    searchResults = cachedResults
-                    isLoading = false
-                    total = cachedResults.count
-                    hasMorePages = false
-                    return
-                }
-                
-                isLoading = true
-                error = nil
-                
-                searchCancellable = service.search(query: query, type: .videos, page: 1, perPage: perPage)
-                    .receive(on: DispatchQueue.main)
-                    .sink(
-                        receiveCompletion: { [weak self] completion in
-                            self?.isLoading = false
-                            if case .failure(let error) = completion {
-                                self?.error = error
-                            }
-                        },
-                        receiveValue: { [weak self] response in
-                            guard let self else { return }
-                            let results = response.data ?? []
-                            searchResults = results
-                            total = response.total ?? 0
-                            hasMorePages = checkHasMorePages(response: response)
-                            
-                            if searchCache.count >= 10, let firstKey = searchCache.keys.first {
-                                searchCache.removeValue(forKey: firstKey)
-                            }
-                            searchCache[query] = results
-                        }
-                    )
+                self?.handleSearchQueryChange(query)
             }
             .store(in: &cancellables)
+    }
+    
+    private func handleSearchQueryChange(_ query: String) {
+        searchCancellable?.cancel()
+        
+        if query.isEmpty {
+            clearSearch()
+            return
+        }
+        
+        resetSearchState(query: query, type: .videos)
+        
+        if let cachedResults = searchCache[query] {
+            applyCachedResults(cachedResults)
+            return
+        }
+        
+        isLoading = true
+        error = nil
+        
+        searchCancellable = service.search(query: query, type: .videos, page: 1, perPage: Constants.perPage)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.error = error
+                    }
+                },
+                receiveValue: { [weak self] response in
+                    self?.handleSearchResponse(response, cacheKey: query)
+                }
+            )
+    }
+    
+    private func resetSearchState(query: String, type: SearchPath) {
+        currentQuery = query
+        currentType = type
+        currentPage = 1
+        searchResults = []
+        error = nil
+    }
+    
+    private func performSearch(query: String, type: SearchPath, page: Int) {
+        searchCancellable = service.search(query: query, type: type, page: page, perPage: Constants.perPage)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.error = error
+                    }
+                },
+                receiveValue: { [weak self] response in
+                    self?.handleSearchResponse(response, cacheKey: nil)
+                }
+            )
+    }
+    
+    private func handleSearchResponse(_ response: VimeoSearchResponse, cacheKey: String?) {
+        let results = response.data ?? []
+        searchResults = results
+        total = response.total ?? 0
+        hasMorePages = checkHasMorePages(response: response)
+        
+        if let cacheKey {
+            cacheResults(results, forKey: cacheKey)
+        }
+    }
+    
+    private func handleLoadMoreResponse(_ response: VimeoSearchResponse, nextPage: Int) {
+        if let newData = response.data {
+            searchResults.append(contentsOf: newData)
+        }
+        currentPage = nextPage
+        hasMorePages = checkHasMorePages(response: response)
+    }
+    
+    private func applyCachedResults(_ results: [VimeoVideo]) {
+        searchResults = results
+        isLoading = false
+        total = results.count
+        hasMorePages = false
+    }
+    
+    private func cacheResults(_ results: [VimeoVideo], forKey key: String) {
+        if searchCache.count >= Constants.maxCacheSize, let firstKey = searchCache.keys.first {
+            searchCache.removeValue(forKey: firstKey)
+        }
+        searchCache[key] = results
     }
     
     private func checkHasMorePages(response: VimeoSearchResponse) -> Bool {

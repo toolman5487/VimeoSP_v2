@@ -10,49 +10,77 @@ import UIKit
 import SnapKit
 import SDWebImage
 
-class SearchResultCell: UITableViewCell {
+final class SearchResultCell: UITableViewCell {
+    
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let thumbnailWidth: CGFloat = 160
+        static let thumbnailHeight: CGFloat = 90
+        static let thumbnailCornerRadius: CGFloat = 8
+        static let durationCornerRadius: CGFloat = 4
+        static let horizontalPadding: CGFloat = 16
+        static let verticalPadding: CGFloat = 16
+        static let labelSpacing: CGFloat = 4
+        static let thumbnailLabelSpacing: CGFloat = 12
+        static let durationPadding: CGFloat = 4
+        static let durationWidth: CGFloat = 60
+        static let durationHeight: CGFloat = 20
+    }
+    
+    // MARK: - UI Components
     
     private let thumbnailImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 8
+        imageView.layer.cornerRadius = Constants.thumbnailCornerRadius
         imageView.backgroundColor = UIColor.vimeoWhite.withAlphaComponent(0.1)
+        imageView.isAccessibilityElement = false
         return imageView
     }()
     
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .vimeoWhite
-        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.font = .preferredFont(forTextStyle: .headline)
+        label.adjustsFontForContentSizeCategory = true
         label.numberOfLines = 2
+        label.isAccessibilityElement = false
         return label
     }()
     
     private let userLabel: UILabel = {
         let label = UILabel()
         label.textColor = .vimeoWhite.withAlphaComponent(0.7)
-        label.font = .systemFont(ofSize: 14)
+        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.adjustsFontForContentSizeCategory = true
+        label.isAccessibilityElement = false
         return label
     }()
     
     private let statsLabel: UILabel = {
         let label = UILabel()
         label.textColor = .vimeoWhite.withAlphaComponent(0.6)
-        label.font = .systemFont(ofSize: 12)
+        label.font = .preferredFont(forTextStyle: .caption1)
+        label.adjustsFontForContentSizeCategory = true
+        label.isAccessibilityElement = false
         return label
     }()
     
     private let durationLabel: UILabel = {
         let label = UILabel()
         label.textColor = .vimeoWhite
-        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.font = .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
         label.backgroundColor = UIColor.black.withAlphaComponent(0.7)
         label.textAlignment = .center
-        label.layer.cornerRadius = 4
+        label.layer.cornerRadius = Constants.durationCornerRadius
         label.clipsToBounds = true
+        label.isAccessibilityElement = false
         return label
     }()
+    
+    // MARK: - Initialization
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -63,64 +91,125 @@ class SearchResultCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Setup
+    
     private func setupCell() {
         backgroundColor = .vimeoBlack
         selectionStyle = .none
         
+        setupAccessibility()
+        setupSubviews()
+        setupConstraints()
+    }
+    
+    private func setupAccessibility() {
+        isAccessibilityElement = true
+        accessibilityTraits = [.button]
+    }
+    
+    private func setupSubviews() {
         contentView.addSubview(thumbnailImageView)
         contentView.addSubview(titleLabel)
         contentView.addSubview(userLabel)
         contentView.addSubview(statsLabel)
         contentView.addSubview(durationLabel)
-        
+    }
+    
+    private func setupConstraints() {
         thumbnailImageView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16)
+            make.leading.equalToSuperview().offset(Constants.horizontalPadding)
             make.centerY.equalToSuperview()
-            make.width.equalTo(160)
-            make.height.equalTo(90)
+            make.width.equalTo(Constants.thumbnailWidth)
+            make.height.equalTo(Constants.thumbnailHeight)
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.leading.equalTo(thumbnailImageView.snp.trailing).offset(12)
-            make.trailing.equalToSuperview().offset(-16)
-            make.top.equalToSuperview().offset(16)
+            make.leading.equalTo(thumbnailImageView.snp.trailing).offset(Constants.thumbnailLabelSpacing)
+            make.trailing.equalToSuperview().offset(-Constants.horizontalPadding)
+            make.top.equalToSuperview().offset(Constants.verticalPadding)
         }
         
         userLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(titleLabel)
-            make.top.equalTo(titleLabel.snp.bottom).offset(4)
+            make.top.equalTo(titleLabel.snp.bottom).offset(Constants.labelSpacing)
         }
         
         statsLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(titleLabel)
-            make.top.equalTo(userLabel.snp.bottom).offset(4)
+            make.top.equalTo(userLabel.snp.bottom).offset(Constants.labelSpacing)
         }
         
         durationLabel.snp.makeConstraints { make in
-            make.trailing.bottom.equalTo(thumbnailImageView).offset(-4)
-            make.width.equalTo(60)
-            make.height.equalTo(20)
+            make.trailing.bottom.equalTo(thumbnailImageView).offset(-Constants.durationPadding)
+            make.width.equalTo(Constants.durationWidth)
+            make.height.equalTo(Constants.durationHeight)
         }
     }
     
+    // MARK: - Configuration
+    
     func configure(with video: VimeoVideo) {
         titleLabel.text = video.name
-        
-        if let user = video.user {
-            userLabel.text = user.name
-        }
-        
-        if let plays = video.stats?.plays {
-            statsLabel.text = video.stats?.formattedPlays ?? "\(plays) plays"
-        }
+        userLabel.text = video.user?.name
+        statsLabel.text = video.stats?.formattedPlays.map { "\($0) plays" }
         
         durationLabel.text = video.formattedDuration
         durationLabel.isHidden = video.formattedDuration == nil
         
-        if let thumbnailURL = video.pictures?.mediumPictureURL ?? video.pictures?.largestPictureURL {
-            thumbnailImageView.sd_setImage(with: URL(string: thumbnailURL))
+        loadThumbnail(for: video)
+        updateAccessibility(for: video)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func loadThumbnail(for video: VimeoVideo) {
+        let thumbnailURL = video.pictures?.mediumPictureURL ?? video.pictures?.largestPictureURL
+        
+        if let urlString = thumbnailURL, let url = URL(string: urlString) {
+            thumbnailImageView.sd_setImage(
+                with: url,
+                placeholderImage: nil,
+                options: [.retryFailed, .scaleDownLargeImages]
+            )
         } else {
             thumbnailImageView.image = nil
         }
+    }
+    
+    private func updateAccessibility(for video: VimeoVideo) {
+        var accessibilityComponents: [String] = []
+        
+        if let name = video.name {
+            accessibilityComponents.append(name)
+        }
+        
+        if let userName = video.user?.name {
+            accessibilityComponents.append("by \(userName)")
+        }
+        
+        if let duration = video.formattedDuration {
+            accessibilityComponents.append("duration \(duration)")
+        }
+        
+        if let plays = video.stats?.formattedPlays {
+            accessibilityComponents.append("\(plays) plays")
+        }
+        
+        accessibilityLabel = accessibilityComponents.joined(separator: ", ")
+        accessibilityHint = "Double tap to play video"
+    }
+    
+    // MARK: - Reuse
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        thumbnailImageView.sd_cancelCurrentImageLoad()
+        thumbnailImageView.image = nil
+        titleLabel.text = nil
+        userLabel.text = nil
+        statsLabel.text = nil
+        durationLabel.text = nil
+        durationLabel.isHidden = true
+        accessibilityLabel = nil
     }
 }

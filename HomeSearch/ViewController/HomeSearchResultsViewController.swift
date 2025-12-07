@@ -11,22 +11,44 @@ import SnapKit
 import Combine
 import SDWebImage
 
-class HomeSearchResultsViewController: UIViewController {
+final class HomeSearchResultsViewController: UIViewController {
+    
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let cellIdentifier = "SearchResultCell"
+        static let cellHeight: CGFloat = 120
+        static let loadMoreThreshold: CGFloat = 200
+        static let footerHeight: CGFloat = 60
+        static let emptyStateInset: CGFloat = 40
+        static let separatorInset: CGFloat = 20
+    }
+    
+    // MARK: - Properties
     
     private let viewModel = HomeSearchViewModel()
     private var cancellables = Set<AnyCancellable>()
     
+    // MARK: - UI Components
+    
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
     private let footerLoadingIndicator = UIActivityIndicatorView(style: .medium)
     
-    private let searchBar = UISearchBar()
+    private let searchBar: UISearchBar = {
+        let searchBar = UISearchBar()
+        searchBar.searchBarStyle = .minimal
+        searchBar.returnKeyType = .search
+        searchBar.accessibilityLabel = "Search"
+        searchBar.accessibilityHint = "Enter search terms to find videos, users, and channels"
+        return searchBar
+    }()
     
     private let tableView: UITableView = {
         let tableView = UITableView()
         tableView.backgroundColor = .vimeoBlack
         tableView.separatorStyle = .singleLine
         tableView.separatorColor = .gray.withAlphaComponent(0.3)
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: Constants.separatorInset, bottom: 0, right: 0)
         tableView.alwaysBounceVertical = true
         tableView.rowHeight = UITableView.automaticDimension
         tableView.sectionHeaderHeight = UITableView.automaticDimension
@@ -38,6 +60,7 @@ class HomeSearchResultsViewController: UIViewController {
         let view = UIView()
         view.backgroundColor = .clear
         view.isHidden = true
+        view.isAccessibilityElement = true
         return view
     }()
     
@@ -45,11 +68,14 @@ class HomeSearchResultsViewController: UIViewController {
         let label = UILabel()
         label.text = "Enter a search term to find videos, users, channels, and more"
         label.textColor = .vimeoWhite.withAlphaComponent(0.6)
-        label.font = .systemFont(ofSize: 16)
+        label.font = .preferredFont(forTextStyle: .body)
+        label.adjustsFontForContentSizeCategory = true
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
     }()
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,10 +90,10 @@ class HomeSearchResultsViewController: UIViewController {
         searchBar.becomeFirstResponder()
     }
     
+    // MARK: - Setup Methods
+    
     private func setupSearchBar() {
         searchBar.delegate = self
-        searchBar.searchBarStyle = .minimal
-        searchBar.returnKeyType = .search
         navigationItem.titleView = searchBar
         
         searchBar.searchTextField.textColor = .systemBackground
@@ -95,12 +121,12 @@ class HomeSearchResultsViewController: UIViewController {
         
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(SearchResultCell.self, forCellReuseIdentifier: "SearchResultCell")
+        tableView.register(SearchResultCell.self, forCellReuseIdentifier: Constants.cellIdentifier)
         setupFooterLoadingView()
     }
     
     private func setupFooterLoadingView() {
-        let footer = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 60))
+        let footer = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: Constants.footerHeight))
         footer.backgroundColor = .clear
         
         footer.addSubview(footerLoadingIndicator)
@@ -124,7 +150,7 @@ class HomeSearchResultsViewController: UIViewController {
     private func setupEmptyStateView() {
         emptyStateView.snp.makeConstraints { make in
             make.center.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(40)
+            make.leading.trailing.equalToSuperview().inset(Constants.emptyStateInset)
         }
         
         emptyStateView.addSubview(emptyStateLabel)
@@ -132,6 +158,8 @@ class HomeSearchResultsViewController: UIViewController {
             make.edges.equalToSuperview()
         }
     }
+    
+    // MARK: - Bindings
     
     private func setupBindings() {
         viewModel.$searchResults
@@ -148,6 +176,7 @@ class HomeSearchResultsViewController: UIViewController {
                 guard let self else { return }
                 if isLoading && viewModel.searchResults.isEmpty {
                     loadingIndicator.startAnimating()
+                    UIAccessibility.post(notification: .announcement, argument: "Loading search results")
                 } else {
                     loadingIndicator.stopAnimating()
                 }
@@ -169,23 +198,31 @@ class HomeSearchResultsViewController: UIViewController {
         viewModel.$error
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
-                if let error = error {
+                if let error {
                     self?.showError(error)
                 }
             }
             .store(in: &cancellables)
     }
     
+    // MARK: - State Updates
+    
     private func updateEmptyState() {
         let isEmpty = viewModel.searchResults.isEmpty && !viewModel.isLoading && !viewModel.isLoadingMore && !viewModel.currentQuery.isEmpty
         emptyStateView.isHidden = !isEmpty
         
         if isEmpty {
-            emptyStateLabel.text = "No results found for \"\(viewModel.currentQuery)\""
+            let message = "No results found for \"\(viewModel.currentQuery)\""
+            emptyStateLabel.text = message
+            emptyStateView.accessibilityLabel = message
         } else if viewModel.currentQuery.isEmpty {
-            emptyStateLabel.text = "Enter a search term to find videos, users, channels, and more"
+            let message = "Enter a search term to find videos, users, channels, and more"
+            emptyStateLabel.text = message
+            emptyStateView.accessibilityLabel = message
         }
     }
+    
+    // MARK: - Error Handling
     
     private func showError(_ error: Error) {
         let alert = UIAlertController(
@@ -193,30 +230,40 @@ class HomeSearchResultsViewController: UIViewController {
             message: error.localizedDescription,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        alert.addAction(UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
+            guard let self, !viewModel.currentQuery.isEmpty else { return }
+            viewModel.search(query: viewModel.currentQuery, type: .videos)
+        })
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
         present(alert, animated: true)
     }
 }
 
+// MARK: - UITableViewDataSource & UITableViewDelegate
+
 extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.searchResults.count
+        viewModel.searchResults.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "SearchResultCell", for: indexPath) as! SearchResultCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: Constants.cellIdentifier, for: indexPath) as? SearchResultCell else {
+            return UITableViewCell()
+        }
         let video = viewModel.searchResults[indexPath.row]
         cell.configure(with: video)
         return cell
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 120
+        Constants.cellHeight
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let video = viewModel.searchResults[indexPath.row]
+        // TODO: Navigate to video detail
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -224,13 +271,15 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
         let contentHeight = scrollView.contentSize.height
         let height = scrollView.frame.size.height
         
-        if offsetY > contentHeight - height - 200 {
+        if offsetY > contentHeight - height - Constants.loadMoreThreshold {
             if viewModel.hasMorePages && !viewModel.isLoading && !viewModel.isLoadingMore {
                 viewModel.loadMore()
             }
         }
     }
 }
+
+// MARK: - UISearchBarDelegate
 
 extension HomeSearchResultsViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
