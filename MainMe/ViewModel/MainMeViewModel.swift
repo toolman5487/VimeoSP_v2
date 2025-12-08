@@ -20,35 +20,30 @@ enum PictureSizeType: Int, CaseIterable {
     case size360 = 360
 }
 
-class MainMeViewModel {
+class MainMeViewModel: BaseViewModel {
     
     static let shared = MainMeViewModel()
     
     private let service: MainMeServiceProtocol
-    private var cancellables = Set<AnyCancellable>()
     
     @Published var meModel: MainMeModel?
-    @Published var isLoading = false
-    @Published var error: Error?
     
     private init(service: MainMeServiceProtocol = MainMeService()) {
         self.service = service
+        super.init()
     }
     
     func fetchMe() {
         guard meModel == nil && !isLoading else { return }
         
         isLoading = true
-        error = nil
+        resetError()
         
         service.fetchMe()
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
-                    if case .failure(let error) = completion {
-                        self?.error = error
-                    }
+                    self?.handleCompletion(completion)
                 },
                 receiveValue: { [weak self] meModel in
                     self?.meModel = meModel

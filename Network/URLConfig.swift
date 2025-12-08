@@ -7,13 +7,22 @@
 
 import Foundation
 
+// MARK: - Configuration
+
 struct URLConfig {
-    static let baseURL = URL(string: "https://api.vimeo.com")!
+    static let baseURL: URL = {
+        guard let url = URL(string: "https://api.vimeo.com") else {
+            fatalError("Invalid base URL configuration")
+        }
+        return url
+    }()
 
     static var token: String {
         Bundle.main.object(forInfoDictionaryKey: "VimeoToken") as? String ?? ""
     }
 }
+
+// MARK: - Me Paths
 
 enum MePath {
     case me
@@ -43,7 +52,13 @@ enum MePath {
         case .meTeams: return "/me/teams"
         }
     }
+    
+    var url: URL {
+        URLConfig.baseURL.appendingPathComponent(path)
+    }
 }
+
+// MARK: - Search Paths
 
 enum SearchPath {
     case videos
@@ -59,5 +74,34 @@ enum SearchPath {
         case .groups: return "/groups"
         }
     }
+    
+    var url: URL {
+        URLConfig.baseURL.appendingPathComponent(path)
+    }
 }
 
+// MARK: - Video Paths
+
+enum VideoPath {
+    case video(videoId: String)
+    case videoRelated(videoId: String)
+    case videoComments(videoId: String)
+    case videoLikes(videoId: String)
+    
+    var path: String {
+        switch self {
+        case .video(let videoId):
+            return "/videos/\(videoId)"
+        case .videoRelated(let videoId):
+            return "/videos/\(videoId)/related"
+        case .videoComments(let videoId):
+            return "/videos/\(videoId)/comments"
+        case .videoLikes(let videoId):
+            return "/videos/\(videoId)/likes"
+        }
+    }
+    
+    var url: URL {
+        URLConfig.baseURL.appendingPathComponent(path)
+    }
+}

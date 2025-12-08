@@ -51,16 +51,7 @@ struct VimeoVideo: Codable {
     }
     
     var formattedDuration: String? {
-        guard let duration = duration, duration > 0 else { return nil }
-        let hours = duration / 3600
-        let minutes = (duration % 3600) / 60
-        let seconds = duration % 60
-        
-        if hours > 0 {
-            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
-        } else {
-            return String(format: "%d:%02d", minutes, seconds)
-        }
+        duration?.formattedDuration()
     }
 }
 

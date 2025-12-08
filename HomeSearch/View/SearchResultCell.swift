@@ -15,17 +15,26 @@ final class SearchResultCell: UITableViewCell {
     // MARK: - Constants
     
     private enum Constants {
-        static let thumbnailWidth: CGFloat = 160
-        static let thumbnailHeight: CGFloat = 90
-        static let thumbnailCornerRadius: CGFloat = 8
-        static let durationCornerRadius: CGFloat = 4
-        static let horizontalPadding: CGFloat = 16
-        static let verticalPadding: CGFloat = 16
-        static let labelSpacing: CGFloat = 4
-        static let thumbnailLabelSpacing: CGFloat = 12
-        static let durationPadding: CGFloat = 4
-        static let durationWidth: CGFloat = 60
-        static let durationHeight: CGFloat = 20
+        
+        enum Thumbnail {
+            static let width: CGFloat = 160
+            static let height: CGFloat = 90
+            static let cornerRadius: CGFloat = 8
+        }
+        
+        enum Duration {
+            static let width: CGFloat = 60
+            static let height: CGFloat = 20
+            static let cornerRadius: CGFloat = 4
+            static let padding: CGFloat = 4
+        }
+        
+        enum Layout {
+            static let horizontalPadding: CGFloat = 16
+            static let verticalPadding: CGFloat = 16
+            static let labelSpacing: CGFloat = 4
+            static let thumbnailLabelSpacing: CGFloat = 12
+        }
     }
     
     // MARK: - UI Components
@@ -34,7 +43,7 @@ final class SearchResultCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = Constants.thumbnailCornerRadius
+        imageView.layer.cornerRadius = Constants.Thumbnail.cornerRadius
         imageView.backgroundColor = UIColor.vimeoWhite.withAlphaComponent(0.1)
         imageView.isAccessibilityElement = false
         return imageView
@@ -74,7 +83,7 @@ final class SearchResultCell: UITableViewCell {
         label.font = .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
         label.backgroundColor = UIColor.black.withAlphaComponent(0.7)
         label.textAlignment = .center
-        label.layer.cornerRadius = Constants.durationCornerRadius
+        label.layer.cornerRadius = Constants.Duration.cornerRadius
         label.clipsToBounds = true
         label.isAccessibilityElement = false
         return label
@@ -117,32 +126,32 @@ final class SearchResultCell: UITableViewCell {
     
     private func setupConstraints() {
         thumbnailImageView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(Constants.horizontalPadding)
+            make.leading.equalToSuperview().offset(Constants.Layout.horizontalPadding)
             make.centerY.equalToSuperview()
-            make.width.equalTo(Constants.thumbnailWidth)
-            make.height.equalTo(Constants.thumbnailHeight)
+            make.width.equalTo(Constants.Thumbnail.width)
+            make.height.equalTo(Constants.Thumbnail.height)
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.leading.equalTo(thumbnailImageView.snp.trailing).offset(Constants.thumbnailLabelSpacing)
-            make.trailing.equalToSuperview().offset(-Constants.horizontalPadding)
-            make.top.equalToSuperview().offset(Constants.verticalPadding)
+            make.leading.equalTo(thumbnailImageView.snp.trailing).offset(Constants.Layout.thumbnailLabelSpacing)
+            make.trailing.equalToSuperview().offset(-Constants.Layout.horizontalPadding)
+            make.top.equalToSuperview().offset(Constants.Layout.verticalPadding)
         }
         
         userLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(titleLabel)
-            make.top.equalTo(titleLabel.snp.bottom).offset(Constants.labelSpacing)
+            make.top.equalTo(titleLabel.snp.bottom).offset(Constants.Layout.labelSpacing)
         }
         
         statsLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(titleLabel)
-            make.top.equalTo(userLabel.snp.bottom).offset(Constants.labelSpacing)
+            make.top.equalTo(userLabel.snp.bottom).offset(Constants.Layout.labelSpacing)
         }
         
         durationLabel.snp.makeConstraints { make in
-            make.trailing.bottom.equalTo(thumbnailImageView).offset(-Constants.durationPadding)
-            make.width.equalTo(Constants.durationWidth)
-            make.height.equalTo(Constants.durationHeight)
+            make.trailing.bottom.equalTo(thumbnailImageView).offset(-Constants.Duration.padding)
+            make.width.equalTo(Constants.Duration.width)
+            make.height.equalTo(Constants.Duration.height)
         }
     }
     

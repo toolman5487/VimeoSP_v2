@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-final class HomeSearchViewModel {
+final class HomeSearchViewModel: BaseViewModel {
     
     // MARK: - Constants
     
@@ -21,9 +21,7 @@ final class HomeSearchViewModel {
     // MARK: - Published Properties
     
     @Published private(set) var searchResults: [VimeoVideo] = []
-    @Published private(set) var isLoading = false
     @Published private(set) var isLoadingMore = false
-    @Published private(set) var error: Error?
     @Published private(set) var currentQuery = ""
     @Published private(set) var hasMorePages = false
     @Published var searchQuery = ""
@@ -31,7 +29,6 @@ final class HomeSearchViewModel {
     // MARK: - Private Properties
     
     private let service: HomeSearchServiceProtocol
-    private var cancellables = Set<AnyCancellable>()
     private var searchCancellable: AnyCancellable?
     private var currentType: SearchPath = .videos
     private var currentPage = 1
@@ -42,6 +39,7 @@ final class HomeSearchViewModel {
     
     init(service: HomeSearchServiceProtocol = HomeSearchService()) {
         self.service = service
+        super.init()
         setupSearchQueryBinding()
     }
     
@@ -71,9 +69,7 @@ final class HomeSearchViewModel {
             .sink(
                 receiveCompletion: { [weak self] completion in
                     self?.isLoadingMore = false
-                    if case .failure(let error) = completion {
-                        self?.error = error
-                    }
+                    self?.handleCompletion(completion)
                 },
                 receiveValue: { [weak self] response in
                     self?.handleLoadMoreResponse(response, nextPage: nextPage)
@@ -89,7 +85,7 @@ final class HomeSearchViewModel {
         total = 0
         hasMorePages = false
         isLoadingMore = false
-        error = nil
+        resetError()
     }
     
     // MARK: - Private Computed Properties
@@ -126,16 +122,13 @@ final class HomeSearchViewModel {
         }
         
         isLoading = true
-        error = nil
+        resetError()
         
         searchCancellable = service.search(query: query, type: .videos, page: 1, perPage: Constants.perPage)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
-                    if case .failure(let error) = completion {
-                        self?.error = error
-                    }
+                    self?.handleCompletion(completion)
                 },
                 receiveValue: { [weak self] response in
                     self?.handleSearchResponse(response, cacheKey: query)
@@ -148,7 +141,7 @@ final class HomeSearchViewModel {
         currentType = type
         currentPage = 1
         searchResults = []
-        error = nil
+        resetError()
     }
     
     private func performSearch(query: String, type: SearchPath, page: Int) {
@@ -156,10 +149,7 @@ final class HomeSearchViewModel {
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
-                    if case .failure(let error) = completion {
-                        self?.error = error
-                    }
+                    self?.handleCompletion(completion)
                 },
                 receiveValue: { [weak self] response in
                     self?.handleSearchResponse(response, cacheKey: nil)
