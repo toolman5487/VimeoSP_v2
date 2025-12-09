@@ -31,7 +31,7 @@ final class VideoPlayerViewModel: BaseViewModel {
         guard !videoId.isEmpty, !isLoading else { return }
         
         isLoading = true
-        error = nil
+        resetError()
         
         service.fetchVideo(videoId: videoId)
             .receive(on: DispatchQueue.main)
@@ -48,6 +48,6 @@ final class VideoPlayerViewModel: BaseViewModel {
     
     func clearVideo() {
         videoModel = nil
-        error = nil
+        resetError()
     }
 }

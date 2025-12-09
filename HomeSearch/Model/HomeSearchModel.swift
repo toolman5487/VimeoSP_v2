@@ -53,6 +53,12 @@ struct VimeoVideo: Codable {
     var formattedDuration: String? {
         duration?.formattedDuration()
     }
+    
+    var videoId: String? {
+        guard let uri = uri else { return nil }
+        let components = uri.split(separator: "/")
+        return components.isEmpty ? nil : String(components.last ?? "")
+    }
 }
 
 // MARK: - User

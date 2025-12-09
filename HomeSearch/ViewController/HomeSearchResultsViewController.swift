@@ -198,9 +198,16 @@ final class HomeSearchResultsViewController: UIViewController {
         viewModel.$error
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
-                if let error {
-                    self?.showError(error)
-                }
+                guard let self, let error = error else { return }
+                ErrorAlert.show(
+                    from: self,
+                    error: error,
+                    title: "Search Error",
+                    retryAction: { [weak self] in
+                        guard let self, !viewModel.currentQuery.isEmpty else { return }
+                        viewModel.search(query: viewModel.currentQuery, type: .videos)
+                    }
+                )
             }
             .store(in: &cancellables)
     }
@@ -222,23 +229,6 @@ final class HomeSearchResultsViewController: UIViewController {
         }
     }
     
-    // MARK: - Error Handling
-    
-    private func showError(_ error: Error) {
-        let alert = UIAlertController(
-            title: "Search Error",
-            message: error.localizedDescription,
-            preferredStyle: .alert
-        )
-        
-        alert.addAction(UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
-            guard let self, !viewModel.currentQuery.isEmpty else { return }
-            viewModel.search(query: viewModel.currentQuery, type: .videos)
-        })
-        
-        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
-        present(alert, animated: true)
-    }
 }
 
 // MARK: - UITableViewDataSource & UITableViewDelegate
@@ -263,7 +253,12 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        // TODO: Navigate to video detail
+        
+        let video = viewModel.searchResults[indexPath.row]
+        guard let videoId = video.videoId else { return }
+        
+        let videoPlayerViewController = VideoPlayerViewController(videoId: videoId)
+        navigationController?.pushViewController(videoPlayerViewController, animated: true)
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
