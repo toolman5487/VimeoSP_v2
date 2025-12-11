@@ -11,7 +11,7 @@ import SnapKit
 import Combine
 import SDWebImage
 
-final class HomeSearchResultsViewController: UIViewController {
+final class HomeSearchResultsViewController: UIViewController, AlertPresentable {
     
     // MARK: - Constants
     
@@ -199,9 +199,8 @@ final class HomeSearchResultsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
                 guard let self, let error = error else { return }
-                ErrorAlert.show(
-                    from: self,
-                    error: error,
+                showError(
+                    error,
                     title: "Search Error",
                     retryAction: { [weak self] in
                         guard let self, !viewModel.currentQuery.isEmpty else { return }

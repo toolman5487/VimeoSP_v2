@@ -10,7 +10,7 @@ import UIKit
 import SnapKit
 import Combine
 
-class MainMeViewController: BaseMainViewController {
+final class MainMeViewController: BaseMainViewController {
     
     private let viewModel = MainMeViewModel.shared
     private var cancellables = Set<AnyCancellable>()
@@ -56,14 +56,27 @@ class MainMeViewController: BaseMainViewController {
             }
             .store(in: &cancellables)
         
-        viewModel.$error
+        viewModel.$isLoading
             .receive(on: DispatchQueue.main)
-            .sink { error in
-                if let error = error {
-                    print("Error: \(error.localizedDescription)")
+            .sink { [weak self] isLoading in
+                if !isLoading {
+                    self?.endRefreshing()
                 }
             }
             .store(in: &cancellables)
+        
+        viewModel.$error
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                guard let self, let error = error else { return }
+                self.endRefreshing()
+                showError(error, title: "Load Error")
+            }
+            .store(in: &cancellables)
+    }
+    
+    override func handleRefresh() {
+        viewModel.refreshMe()
     }
     
     override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {

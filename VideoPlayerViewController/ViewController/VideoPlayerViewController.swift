@@ -11,7 +11,7 @@ import SnapKit
 import SDWebImage
 import Combine
 
-class VideoPlayerViewController: BaseMainViewController {
+final class VideoPlayerViewController: BaseMainViewController {
     
     private let viewModel: VideoPlayerViewModel
     private var cancellables = Set<AnyCancellable>()
@@ -44,11 +44,8 @@ class VideoPlayerViewController: BaseMainViewController {
         viewModel.$error
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
-                guard let self, let error = error else { return }
-                ErrorAlert.show(
-                    from: self,
-                    errorMessage: viewModel.errorMessage
-                )
+                guard let self, let _ = error else { return }
+                showError(message: viewModel.errorMessage)
             }
             .store(in: &cancellables)
     }

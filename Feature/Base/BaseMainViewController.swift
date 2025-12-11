@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 
-class BaseMainViewController: UIViewController {
+class BaseMainViewController: UIViewController, AlertPresentable, LoadingPresentable, EmptyStatePresentable, ToastPresentable, Refreshable, KeyboardDismissable {
     
     public let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -20,12 +20,6 @@ class BaseMainViewController: UIViewController {
         collectionView.backgroundColor = .clear
         return collectionView
     }()
-    
-    public let refreshControl: UIRefreshControl = {
-        let refreshControl = UIRefreshControl()
-        refreshControl.tintColor = UIColor.vimeoWhite
-        return refreshControl
-    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,7 +28,7 @@ class BaseMainViewController: UIViewController {
         navigationItem.backButtonDisplayMode = .minimal
         setupNavigationBarAppearance()
         setupCollectionView()
-        setupRefreshControl()
+        setupRefresh(for: collectionView)
     }
     
     open func setupCollectionView() {
@@ -46,13 +40,8 @@ class BaseMainViewController: UIViewController {
         }
     }
     
-    open func setupRefreshControl() {
-        refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
-        collectionView.refreshControl = refreshControl
-    }
-    
-    @objc open func refreshData() {
-        refreshControl.endRefreshing()
+    func handleRefresh() {
+        endRefreshing()
     }
 
     open func setupNavigationBarAppearance() {

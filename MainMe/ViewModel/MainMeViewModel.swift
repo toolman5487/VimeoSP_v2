@@ -52,6 +52,25 @@ class MainMeViewModel: BaseViewModel {
             .store(in: &cancellables)
     }
     
+    func refreshMe() {
+        guard !isLoading else { return }
+        
+        isLoading = true
+        resetError()
+        
+        service.fetchMe()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.handleCompletion(completion)
+                },
+                receiveValue: { [weak self] meModel in
+                    self?.meModel = meModel
+                }
+            )
+            .store(in: &cancellables)
+    }
+    
     var accountUppercased: String {
         return meModel?.account.uppercased() ?? "FREE"
     }
