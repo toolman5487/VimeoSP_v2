@@ -84,6 +84,7 @@ enum SearchPath {
 
 enum VideoPath {
     case video(videoId: String)
+    case videoFiles(videoId: String)
     case videoRelated(videoId: String)
     case videoComments(videoId: String)
     case videoLikes(videoId: String)
@@ -92,6 +93,8 @@ enum VideoPath {
         switch self {
         case .video(let videoId):
             return "/videos/\(videoId)"
+        case .videoFiles(let videoId):
+            return "/videos/\(videoId)/files"
         case .videoRelated(let videoId):
             return "/videos/\(videoId)/related"
         case .videoComments(let videoId):

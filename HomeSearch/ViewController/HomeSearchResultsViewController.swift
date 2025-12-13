@@ -16,7 +16,6 @@ final class HomeSearchResultsViewController: UIViewController, AlertPresentable 
     // MARK: - Constants
     
     private enum Constants {
-        static let cellIdentifier = "SearchResultCell"
         static let cellHeight: CGFloat = 120
         static let loadMoreThreshold: CGFloat = 200
         static let footerHeight: CGFloat = 60
@@ -132,7 +131,7 @@ final class HomeSearchResultsViewController: UIViewController, AlertPresentable 
         
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(SearchResultCell.self, forCellReuseIdentifier: Constants.cellIdentifier)
+        tableView.register(SearchResultCell.self, forCellReuseIdentifier: String(describing: SearchResultCell.self))
         setupFooterLoadingView()
     }
     
@@ -249,7 +248,7 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: Constants.cellIdentifier, for: indexPath) as? SearchResultCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: SearchResultCell.self), for: indexPath) as? SearchResultCell else {
             return UITableViewCell()
         }
         let video = viewModel.searchResults[indexPath.row]

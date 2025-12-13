@@ -14,7 +14,9 @@ import Combine
 // MARK: - MainMeAvatarCell
 class MainMeAvatarCell: UICollectionViewCell, MainMeSectionProvider {
     
-    static let identifier = "MainMeAvatarCell"
+    static var identifier: String {
+        String(describing: Self.self)
+    }
     
     static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
         return viewModel.meModel != nil
@@ -173,7 +175,9 @@ class MainMeAvatarCell: UICollectionViewCell, MainMeSectionProvider {
 // MARK: - MainMemetadataCell
 class MainMemetadataCell: UICollectionViewCell, MainMeSectionProvider {
     
-    static let identifier = "MainMemetadataCell"
+    static var identifier: String {
+        String(describing: Self.self)
+    }
     
     static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
         return viewModel.meModel != nil
@@ -197,7 +201,7 @@ class MainMemetadataCell: UICollectionViewCell, MainMeSectionProvider {
         cv.showsHorizontalScrollIndicator = false
         cv.delegate = self
         cv.dataSource = self
-        cv.register(MetadataItemCell.self, forCellWithReuseIdentifier: "MetadataItemCell")
+        cv.register(MetadataItemCell.self, forCellWithReuseIdentifier: String(describing: MetadataItemCell.self))
         return cv
     }()
     
@@ -253,7 +257,7 @@ extension MainMemetadataCell: UICollectionViewDataSource, UICollectionViewDelega
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MetadataItemCell", for: indexPath) as! MetadataItemCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: MetadataItemCell.self), for: indexPath) as! MetadataItemCell
         
         let item = metadataItems[indexPath.item]
         cell.configure(title: item.title, value: item.value, icon: item.icon)
@@ -268,7 +272,9 @@ extension MainMemetadataCell: UICollectionViewDataSource, UICollectionViewDelega
 // MARK: - MainMeEntranceCell
 class MainMeEntranceCell: UICollectionViewCell, MainMeTappableSection {
     
-    static let identifier = "MainMeEntranceCell"
+    static var identifier: String {
+        String(describing: Self.self)
+    }
     
     static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
         return true
@@ -347,7 +353,9 @@ class MainMeEntranceCell: UICollectionViewCell, MainMeTappableSection {
 // MARK: - MainMeAdditionalStatsCell
 class MainMeAdditionalStatsCell: UICollectionViewCell, MainMeSectionProvider {
     
-    static let identifier = "MainMeAdditionalStatsCell"
+    static var identifier: String {
+        String(describing: Self.self)
+    }
     
     static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
         return !viewModel.additionalStatsItems.isEmpty
@@ -410,7 +418,9 @@ class MainMeAdditionalStatsCell: UICollectionViewCell, MainMeSectionProvider {
 // MARK: - MainMeContentFilterCell
 class MainMeContentFilterCell: UICollectionViewCell, MainMeSectionProvider {
     
-    static let identifier = "MainMeContentFilterCell"
+    static var identifier: String {
+        String(describing: Self.self)
+    }
     
     static func shouldDisplay(viewModel: MainMeViewModel) -> Bool {
         return !viewModel.contentFilterItems.isEmpty

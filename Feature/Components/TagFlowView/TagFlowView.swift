@@ -56,7 +56,7 @@ class TagFlowView: UIView {
         cv.showsHorizontalScrollIndicator = false
         cv.dataSource = self
         cv.delegate = self
-        cv.register(TagCell.self, forCellWithReuseIdentifier: TagCell.identifier)
+        cv.register(TagCell.self, forCellWithReuseIdentifier: String(describing: TagCell.self))
         return cv
     }()
     
@@ -122,7 +122,7 @@ extension TagFlowView: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TagCell.identifier, for: indexPath) as! TagCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: TagCell.self), for: indexPath) as! TagCell
         cell.configure(
             text: configuration.tags[indexPath.item].capitalized,
             config: configuration
@@ -142,8 +142,6 @@ extension TagFlowView: UICollectionViewDelegateFlowLayout {
 
 // MARK: - TagCell
 private class TagCell: UICollectionViewCell {
-    
-    static let identifier = "TagCell"
     
     private let label: UILabel = {
         let label = UILabel()

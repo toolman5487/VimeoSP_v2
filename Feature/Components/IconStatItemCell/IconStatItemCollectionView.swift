@@ -67,7 +67,7 @@ class IconStatItemCollectionView: UIView {
         cv.showsVerticalScrollIndicator = false
         cv.delegate = self
         cv.dataSource = self
-        cv.register(IconStatItemCell.self, forCellWithReuseIdentifier: "IconStatItemCell")
+        cv.register(IconStatItemCell.self, forCellWithReuseIdentifier: String(describing: IconStatItemCell.self))
         return cv
     }()
     
@@ -150,7 +150,7 @@ extension IconStatItemCollectionView: UICollectionViewDataSource, UICollectionVi
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "IconStatItemCell", for: indexPath) as! IconStatItemCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: IconStatItemCell.self), for: indexPath) as! IconStatItemCell
         
         if let item = configuration?.items[indexPath.item] {
             cell.configure(with: item)
