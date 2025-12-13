@@ -67,7 +67,7 @@ extension ToastPresentable {
         let label = UILabel()
         label.text = message
         label.textColor = toastTextColor
-        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.numberOfLines = 0
         

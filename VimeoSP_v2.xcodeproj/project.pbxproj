@@ -26,6 +26,10 @@
 		15F2259A2EEB11BC008C309C /* EmptyStatePresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F225932EEB11BC008C309C /* EmptyStatePresentable.swift */; };
 		15F2259B2EEB11BC008C309C /* Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F225962EEB11BC008C309C /* Refreshable.swift */; };
 		15F2259C2EEB11BC008C309C /* ToastPresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F225972EEB11BC008C309C /* ToastPresentable.swift */; };
+		15F225A32EED537F008C309C /* VideoInfoHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F2259F2EED537F008C309C /* VideoInfoHeaderCell.swift */; };
+		15F225A42EED537F008C309C /* VideoDescriptionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F2259E2EED537F008C309C /* VideoDescriptionCell.swift */; };
+		15F225A52EED537F008C309C /* VideoStatsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F225A12EED537F008C309C /* VideoStatsCell.swift */; };
+		15F225A62EED537F008C309C /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F225A02EED537F008C309C /* VideoPlayerView.swift */; };
 		15FF4C3C2EC9975A00E7888D /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 15FF4C3B2EC9975A00E7888D /* SnapKit */; };
 		15FF4C3F2EC9976700E7888D /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 15FF4C3E2EC9976700E7888D /* SDWebImage */; };
 		15FF4C422EC99C0100E7888D /* MainTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FF4C412EC99C0100E7888D /* MainTabBar.swift */; };
@@ -67,6 +71,10 @@
 		15F225952EEB11BC008C309C /* LoadingPresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingPresentable.swift; sourceTree = "<group>"; };
 		15F225962EEB11BC008C309C /* Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Refreshable.swift; sourceTree = "<group>"; };
 		15F225972EEB11BC008C309C /* ToastPresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastPresentable.swift; sourceTree = "<group>"; };
+		15F2259E2EED537F008C309C /* VideoDescriptionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDescriptionCell.swift; sourceTree = "<group>"; };
+		15F2259F2EED537F008C309C /* VideoInfoHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoInfoHeaderCell.swift; sourceTree = "<group>"; };
+		15F225A02EED537F008C309C /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
+		15F225A12EED537F008C309C /* VideoStatsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoStatsCell.swift; sourceTree = "<group>"; };
 		15FF4C222EC9937000E7888D /* VimeoSP_v2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VimeoSP_v2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		15FF4C412EC99C0100E7888D /* MainTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBar.swift; sourceTree = "<group>"; };
 		15FF4C452EC99C6100E7888D /* MainHomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeViewController.swift; sourceTree = "<group>"; };
@@ -200,6 +208,7 @@
 		15F2257F2EE705DF008C309C /* VideoPlayerViewController */ = {
 			isa = PBXGroup;
 			children = (
+				15F225A22EED537F008C309C /* View */,
 				15F2258D2EE71852008C309C /* ViewModel */,
 				15F225862EE70D44008C309C /* Service */,
 				15F225832EE70A4B008C309C /* Model */,
@@ -259,6 +268,17 @@
 				15F225912EEB0F04008C309C /* AlertPresentable.swift */,
 			);
 			path = POP;
+			sourceTree = "<group>";
+		};
+		15F225A22EED537F008C309C /* View */ = {
+			isa = PBXGroup;
+			children = (
+				15F2259E2EED537F008C309C /* VideoDescriptionCell.swift */,
+				15F2259F2EED537F008C309C /* VideoInfoHeaderCell.swift */,
+				15F225A02EED537F008C309C /* VideoPlayerView.swift */,
+				15F225A12EED537F008C309C /* VideoStatsCell.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		15FF4C192EC9937000E7888D = {
@@ -543,6 +563,10 @@
 				15F2259B2EEB11BC008C309C /* Refreshable.swift in Sources */,
 				15F2259C2EEB11BC008C309C /* ToastPresentable.swift in Sources */,
 				15987CF32EDDDDDD00242C99 /* HomeSearchResultsViewController.swift in Sources */,
+				15F225A32EED537F008C309C /* VideoInfoHeaderCell.swift in Sources */,
+				15F225A42EED537F008C309C /* VideoDescriptionCell.swift in Sources */,
+				15F225A52EED537F008C309C /* VideoStatsCell.swift in Sources */,
+				15F225A62EED537F008C309C /* VideoPlayerView.swift in Sources */,
 				15F225882EE70D61008C309C /* VideoPlayerService.swift in Sources */,
 				15FF4C652ECCBADA00E7888D /* MainMeViewModel.swift in Sources */,
 			);
