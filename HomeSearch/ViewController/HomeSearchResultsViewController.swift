@@ -266,7 +266,8 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
         let video = viewModel.searchResults[indexPath.row]
         guard let videoId = video.videoId else { return }
         
-        let videoPlayerViewController = VideoPlayerViewController(videoId: videoId)
+        let videoURL = "https://vimeo.com/\(videoId)"
+        let videoPlayerViewController = VideoPlayerViewController(videoURL: videoURL)
         navigationController?.pushViewController(videoPlayerViewController, animated: true)
     }
     

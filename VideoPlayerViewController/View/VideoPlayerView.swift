@@ -21,9 +21,12 @@ final class VideoPlayerView: UIView {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
+        config.allowsAirPlayForMediaPlayback = true
+        config.allowsPictureInPictureMediaPlayback = true
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.backgroundColor = .black
         webView.scrollView.isScrollEnabled = false
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.isOpaque = false
         return webView
     }()
@@ -93,32 +96,42 @@ final class VideoPlayerView: UIView {
     }
     
     private func loadVideo(videoId: String) {
-        guard let embedURL = URL(string: "https://player.vimeo.com/video/\(videoId)?autoplay=1&muted=0") else { return }
+        let embedURLString = "https://player.vimeo.com/video/\(videoId)?autoplay=1&muted=0&playsinline=1"
         
         let embedHTML = """
         <!DOCTYPE html>
         <html>
         <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
             <style>
-                body { margin: 0; padding: 0; background: #000; }
-                iframe { width: 100%; height: 100%; border: 0; }
+                * { margin: 0; padding: 0; }
+                html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+                iframe { 
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    border: 0;
+                }
             </style>
         </head>
         <body>
-            <iframe src="\(embedURL.absoluteString)" 
-                    frameborder="0" 
-                    allow="autoplay; fullscreen; picture-in-picture" 
-                    allowfullscreen>
+            <iframe 
+                src="\(embedURLString)" 
+                frameborder="0" 
+                allow="autoplay; fullscreen; picture-in-picture; encrypted-media" 
+                allowfullscreen>
             </iframe>
         </body>
         </html>
         """
         
         loadingIndicator.startAnimating()
+        placeholderImageView.isHidden = false
         webView.loadHTMLString(embedHTML, baseURL: nil)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.loadingIndicator.stopAnimating()
             self?.placeholderImageView.isHidden = true
         }

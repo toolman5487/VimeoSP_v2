@@ -7,87 +7,108 @@
 
 import Foundation
 import UIKit
+import WebKit
 import SnapKit
 import Combine
 
-final class VideoPlayerViewController: UIViewController, AlertPresentable, LoadingPresentable {
+final class VideoPlayerViewController: UIViewController, LoadingPresentable, BackButtonPresentable {
     
-    private enum Section: Int, CaseIterable {
-        case info
-        case stats
-        case description
-    }
+    // MARK: - Properties
+    
+    var backButtonTopOffset: CGFloat { 16 }
+    var backButtonLeadingOffset: CGFloat { 12 }
+    var backButtonSize: CGFloat { 32 }
     
     private let viewModel: VideoPlayerViewModel
     private var cancellables = Set<AnyCancellable>()
     
-    private let videoPlayerView = VideoPlayerView()
-    
-    private let tableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .plain)
-        tableView.backgroundColor = .vimeoBlack
-        tableView.separatorStyle = .none
-        tableView.contentInsetAdjustmentBehavior = .never
-        return tableView
+    private let webView: WKWebView = {
+        let config = WKWebViewConfiguration()
+        config.allowsInlineMediaPlayback = true
+        config.mediaTypesRequiringUserActionForPlayback = []
+        config.allowsAirPlayForMediaPlayback = true
+        config.allowsPictureInPictureMediaPlayback = true
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.backgroundColor = .black
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.scrollView.bounces = false
+        return webView
     }()
     
-    private var infoHeaderCell: VideoInfoHeaderCell?
-    private var statsCell: VideoStatsCell?
-    private var descriptionCell: VideoDescriptionCell?
+    private lazy var navigationDelegate = WebViewNavigationDelegate(
+        onLoadingChange: { [weak self] isLoading in
+            self?.viewModel.isLoading = isLoading
+        },
+        onPageLoad: { [weak self] in
+            self?.handlePageLoaded()
+        },
+        shouldAllowNavigation: { [weak self] url in
+            self?.viewModel.isAllowedURL(url) ?? false
+        }
+    )
     
-    init(videoId: String) {
-        self.viewModel = VideoPlayerViewModel()
+    
+    // MARK: - Initialization
+    
+    init(videoURL: String) {
+        self.viewModel = VideoPlayerViewModel(videoURL: videoURL)
         super.init(nibName: nil, bundle: nil)
         hidesBottomBarWhenPushed = true
-        viewModel.fetchVideo(videoId: videoId)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
-        setupTableView()
         setupBindings()
+        loadVideo()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if navigationController?.isNavigationBarHidden == false {
+            navigationController?.setNavigationBarHidden(true, animated: false)
+        }
+        setupBackButton()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+    
+    // MARK: - Setup
     
     private func setupViews() {
         view.backgroundColor = .vimeoBlack
         
-        view.addSubview(videoPlayerView)
-        view.addSubview(tableView)
+        view.addSubview(webView)
         
-        videoPlayerView.snp.makeConstraints { make in
+        viewModel.setupAuthenticationCookies(webView: webView)
+        
+        if let userScript = viewModel.createAuthenticationUserScript() {
+            webView.configuration.userContentController.addUserScript(userScript)
+        }
+        
+        webView.navigationDelegate = navigationDelegate
+        
+        webView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(videoPlayerView.snp.width).multipliedBy(9.0 / 16.0)
+            make.right.left.bottom.equalToSuperview()
         }
-        
-        tableView.snp.makeConstraints { make in
-            make.top.equalTo(videoPlayerView.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
-    }
-    
-    private func setupTableView() {
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.register(VideoInfoHeaderCell.self, forCellReuseIdentifier: "VideoInfoHeaderCell")
-        tableView.register(VideoStatsCell.self, forCellReuseIdentifier: "VideoStatsCell")
-        tableView.register(VideoDescriptionCell.self, forCellReuseIdentifier: "VideoDescriptionCell")
     }
     
     private func setupBindings() {
-        viewModel.$videoModel
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] videoModel in
-                guard let self, let videoModel = videoModel else { return }
-                self.updateUI(with: videoModel)
-            }
-            .store(in: &cancellables)
-        
         viewModel.$isLoading
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isLoading in
@@ -99,86 +120,123 @@ final class VideoPlayerViewController: UIViewController, AlertPresentable, Loadi
             }
             .store(in: &cancellables)
         
-        viewModel.$error
+        viewModel.$isLoggedIn
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] error in
-                guard let self, let _ = error else { return }
-                self.showError(message: viewModel.errorMessage)
+            .sink { _ in }
+            .store(in: &cancellables)
+        
+        viewModel.$shouldRedirectToLogin
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] shouldRedirect in
+                if shouldRedirect {
+                    self?.redirectToLogin()
+                }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$shouldReloadOriginalURL
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] shouldReload in
+                if shouldReload {
+                    self?.reloadOriginalVideo()
+                }
             }
             .store(in: &cancellables)
     }
     
-    private func updateUI(with video: VideoPlayerModel) {
-        if let videoId = video.videoId {
-            videoPlayerView.configure(videoId: videoId, thumbnailURL: video.thumbnailURL)
+    // MARK: - Actions
+    
+    private func loadVideo() {
+        guard let request = viewModel.getAuthenticatedRequest() else { return }
+        webView.load(request)
+    }
+    
+    private func handlePageLoaded() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.checkLoginStatus()
+            self?.setupBackButton()
         }
+    }
+    
+    private func checkLoginStatus() {
+        let script = viewModel.getLoginCheckScript()
         
-        tableView.reloadData()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
+            
+            self.webView.evaluateJavaScript(script) { [weak self] result, error in
+                guard let self = self else { return }
+                
+                if let result = result {
+                    let currentURL = self.webView.url?.absoluteString
+                    self.viewModel.updateLoginStatus(result, currentURL: currentURL)
+                }
+            }
+        }
     }
     
-    private func handleLike() {
-        print("Like tapped")
+    private func redirectToLogin() {
+        guard let loginURL = viewModel.getLoginURL() else { return }
+        let request = URLRequest(url: loginURL)
+        webView.load(request)
+        viewModel.shouldRedirectToLogin = false
     }
     
-    private func handleShare() {
-        guard let video = viewModel.videoModel,
-              let urlString = video.link,
-              let url = URL(string: urlString) else { return }
-        
-        let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-        present(activityVC, animated: true)
-    }
-    
-    private func handleSave() {
-        print("Save tapped")
+    private func reloadOriginalVideo() {
+        guard let request = viewModel.getOriginalVideoRequest() else { return }
+        webView.load(request)
+        viewModel.shouldReloadOriginalURL = false
     }
 }
 
-extension VideoPlayerViewController: UITableViewDataSource, UITableViewDelegate {
+private final class WebViewNavigationDelegate: NSObject, WKNavigationDelegate {
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return Section.allCases.count
+    private let onLoadingChange: (Bool) -> Void
+    private let onPageLoad: () -> Void
+    private let shouldAllowNavigation: (URL) -> Bool
+    
+    init(
+        onLoadingChange: @escaping (Bool) -> Void,
+        onPageLoad: @escaping () -> Void,
+        shouldAllowNavigation: @escaping (URL) -> Bool
+    ) {
+        self.onLoadingChange = onLoadingChange
+        self.onPageLoad = onPageLoad
+        self.shouldAllowNavigation = shouldAllowNavigation
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let section = Section(rawValue: indexPath.row),
-              let video = viewModel.videoModel else {
-            return UITableViewCell()
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        guard let url = navigationAction.request.url else {
+            decisionHandler(.cancel)
+            return
         }
         
-        switch section {
-        case .info:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "VideoInfoHeaderCell", for: indexPath) as! VideoInfoHeaderCell
-            cell.configure(with: video)
-            cell.onLikeTapped = { [weak self] in self?.handleLike() }
-            cell.onShareTapped = { [weak self] in self?.handleShare() }
-            cell.onSaveTapped = { [weak self] in self?.handleSave() }
-            infoHeaderCell = cell
-            return cell
-            
-        case .stats:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "VideoStatsCell", for: indexPath) as! VideoStatsCell
-            cell.configure(with: video)
-            statsCell = cell
-            return cell
-            
-        case .description:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "VideoDescriptionCell", for: indexPath) as! VideoDescriptionCell
-            cell.configure(with: video)
-            cell.onExpandToggle = { [weak self] isExpanded in
-                self?.tableView.beginUpdates()
-                self?.tableView.endUpdates()
-            }
-            descriptionCell = cell
-            return cell
+        if shouldAllowNavigation(url) {
+            decisionHandler(.allow)
+        } else {
+            decisionHandler(.cancel)
         }
     }
     
-    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        onLoadingChange(true)
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        onLoadingChange(false)
+        onPageLoad()
+    }
+    
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        onLoadingChange(false)
+    }
+    
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        onLoadingChange(false)
     }
 }
+
