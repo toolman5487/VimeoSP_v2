@@ -44,6 +44,8 @@ extension BackButtonPresentable {
         
         let button = UIButton(configuration: config)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.alpha = 0
+        button.isHidden = true
         
         button.addAction(UIAction { [weak self] _ in
             self?.handleBackButtonTapped()
@@ -63,9 +65,35 @@ extension BackButtonPresentable {
     }
     
     func setupBackButton() {
+        _ = backButton
+    }
+    
+    func showBackButton(animated: Bool = true) {
         let button = backButton
+        button.isHidden = false
         view.bringSubviewToFront(button)
-        button.layer.zPosition = 1000
+        
+        if animated {
+            UIView.animate(withDuration: 0.3) {
+                button.alpha = 1
+            }
+        } else {
+            button.alpha = 1
+        }
+    }
+    
+    func hideBackButton(animated: Bool = true) {
+        let button = backButton
+        if animated {
+            UIView.animate(withDuration: 0.3) {
+                button.alpha = 0
+            } completion: { _ in
+                button.isHidden = true
+            }
+        } else {
+            button.alpha = 0
+            button.isHidden = true
+        }
     }
     
     func handleBackButtonTapped() {

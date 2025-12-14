@@ -188,8 +188,15 @@ final class VideoPlayerViewModel: BaseViewModel {
         } else if let status = result as? String, status == "redirect_to_login" {
             if let currentURL = currentURL, !currentURL.contains("/log_in") {
                 self.shouldRedirectToLogin = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.shouldRedirectToLogin = false
+                }
             }
         }
+    }
+    
+    func markReloadCompleted() {
+        shouldReloadOriginalURL = false
     }
     
     func getLoginURL() -> URL? {

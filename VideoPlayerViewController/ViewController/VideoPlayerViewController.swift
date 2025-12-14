@@ -42,6 +42,9 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
         onPageLoad: { [weak self] in
             self?.handlePageLoaded()
         },
+        onPageFinish: { [weak self] in
+            self?.showBackButton(animated: true)
+        },
         shouldAllowNavigation: { [weak self] url in
             self?.viewModel.isAllowedURL(url) ?? false
         }
@@ -76,9 +79,7 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if navigationController?.isNavigationBarHidden == false {
-            navigationController?.setNavigationBarHidden(true, animated: false)
-        }
+        navigationController?.setNavigationBarHidden(true, animated: false)
         setupBackButton()
     }
     
@@ -112,34 +113,24 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
         viewModel.$isLoading
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isLoading in
-                if isLoading {
-                    self?.showLoading()
-                } else {
-                    self?.hideLoading()
-                }
+                isLoading ? self?.showLoading() : self?.hideLoading()
             }
-            .store(in: &cancellables)
-        
-        viewModel.$isLoggedIn
-            .receive(on: DispatchQueue.main)
-            .sink { _ in }
             .store(in: &cancellables)
         
         viewModel.$shouldRedirectToLogin
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] shouldRedirect in
-                if shouldRedirect {
-                    self?.redirectToLogin()
-                }
+            .compactMap { $0 ? () : nil }
+            .sink { [weak self] _ in
+                self?.redirectToLogin()
             }
             .store(in: &cancellables)
         
         viewModel.$shouldReloadOriginalURL
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] shouldReload in
-                if shouldReload {
-                    self?.reloadOriginalVideo()
-                }
+            .compactMap { $0 ? () : nil }
+            .sink { [weak self] _ in
+                self?.reloadOriginalVideo()
+                self?.viewModel.markReloadCompleted()
             }
             .store(in: &cancellables)
     }
@@ -154,7 +145,6 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
     private func handlePageLoaded() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.checkLoginStatus()
-            self?.setupBackButton()
         }
     }
     
@@ -164,28 +154,23 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self = self else { return }
             
-            self.webView.evaluateJavaScript(script) { [weak self] result, error in
-                guard let self = self else { return }
-                
-                if let result = result {
-                    let currentURL = self.webView.url?.absoluteString
-                    self.viewModel.updateLoginStatus(result, currentURL: currentURL)
-                }
+            self.webView.evaluateJavaScript(script) { [weak self] result, _ in
+                guard let self = self, let result = result else { return }
+                let currentURL = self.webView.url?.absoluteString
+                self.viewModel.updateLoginStatus(result, currentURL: currentURL)
             }
         }
     }
     
     private func redirectToLogin() {
+        hideBackButton(animated: true)
         guard let loginURL = viewModel.getLoginURL() else { return }
-        let request = URLRequest(url: loginURL)
-        webView.load(request)
-        viewModel.shouldRedirectToLogin = false
+        webView.load(URLRequest(url: loginURL))
     }
     
     private func reloadOriginalVideo() {
         guard let request = viewModel.getOriginalVideoRequest() else { return }
         webView.load(request)
-        viewModel.shouldReloadOriginalURL = false
     }
 }
 
@@ -193,15 +178,18 @@ private final class WebViewNavigationDelegate: NSObject, WKNavigationDelegate {
     
     private let onLoadingChange: (Bool) -> Void
     private let onPageLoad: () -> Void
+    private let onPageFinish: () -> Void
     private let shouldAllowNavigation: (URL) -> Bool
     
     init(
         onLoadingChange: @escaping (Bool) -> Void,
         onPageLoad: @escaping () -> Void,
+        onPageFinish: @escaping () -> Void,
         shouldAllowNavigation: @escaping (URL) -> Bool
     ) {
         self.onLoadingChange = onLoadingChange
         self.onPageLoad = onPageLoad
+        self.onPageFinish = onPageFinish
         self.shouldAllowNavigation = shouldAllowNavigation
     }
     
@@ -228,6 +216,7 @@ private final class WebViewNavigationDelegate: NSObject, WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         onLoadingChange(false)
+        onPageFinish()
         onPageLoad()
     }
     
