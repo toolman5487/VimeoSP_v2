@@ -26,17 +26,13 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
     private let viewModel: VideoPlayerViewModel
     private var cancellables = Set<AnyCancellable>()
     
-    private let webView: WKWebView = {
+    private let webViewContainer: VideoPlayerWebView = {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
         config.allowsAirPlayForMediaPlayback = true
         config.allowsPictureInPictureMediaPlayback = true
-        let webView = WKWebView(frame: .zero, configuration: config)
-        webView.backgroundColor = .vimeoWhite
-        webView.scrollView.contentInsetAdjustmentBehavior = .never
-        webView.scrollView.bounces = false
-        return webView
+        return VideoPlayerWebView(configuration: config)
     }()
     
     private lazy var navigationDelegate = WebViewNavigationDelegate(
@@ -44,7 +40,14 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
             self?.viewModel.isLoading = isLoading
         },
         onPageLoad: { [weak self] in
-            self?.handlePageLoaded()
+            guard let self = self else { return }
+            let currentURL = self.webViewContainer.url?.absoluteString
+            self.viewModel.handlePageLoaded(
+                webViewURL: currentURL,
+                evaluateJavaScript: { script, completion in
+                    self.webViewContainer.evaluateJavaScript(script, completionHandler: completion)
+                }
+            )
         },
         shouldAllowNavigation: { [weak self] url in
             self?.viewModel.isAllowedURL(url) ?? false
@@ -95,17 +98,17 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
     private func setupViews() {
         view.backgroundColor = .vimeoWhite
         
-        view.addSubview(webView)
+        view.addSubview(webViewContainer)
         
-        viewModel.setupAuthenticationCookies(webView: webView)
+        viewModel.setupAuthenticationCookies(webView: webViewContainer.webView)
         
         if let userScript = viewModel.createAuthenticationUserScript() {
-            webView.configuration.userContentController.addUserScript(userScript)
+            webViewContainer.webView.configuration.userContentController.addUserScript(userScript)
         }
         
-        webView.navigationDelegate = navigationDelegate
+        webViewContainer.webView.navigationDelegate = navigationDelegate
         
-        webView.snp.makeConstraints { make in
+        webViewContainer.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.right.left.bottom.equalToSuperview()
         }
@@ -141,37 +144,17 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
     
     private func loadVideo() {
         guard let request = viewModel.getAuthenticatedRequest() else { return }
-        webView.load(request)
-    }
-    
-    private func handlePageLoaded() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.checkLoginStatus()
-        }
-    }
-    
-    private func checkLoginStatus() {
-        let script = viewModel.getLoginCheckScript()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self = self else { return }
-            
-            self.webView.evaluateJavaScript(script) { [weak self] result, _ in
-                guard let self = self, let result = result else { return }
-                let currentURL = self.webView.url?.absoluteString
-                self.viewModel.updateLoginStatus(result, currentURL: currentURL)
-            }
-        }
+        webViewContainer.load(request: request)
     }
     
     private func redirectToLogin() {
         guard let loginURL = viewModel.getLoginURL() else { return }
-        webView.load(URLRequest(url: loginURL))
+        webViewContainer.load(request: URLRequest(url: loginURL))
     }
     
     private func reloadOriginalVideo() {
         guard let request = viewModel.getOriginalVideoRequest() else { return }
-        webView.load(request)
+        webViewContainer.load(request: request)
     }
 }
 

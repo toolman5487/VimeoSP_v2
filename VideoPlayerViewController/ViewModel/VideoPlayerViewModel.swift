@@ -199,6 +199,23 @@ final class VideoPlayerViewModel: BaseViewModel {
         shouldReloadOriginalURL = false
     }
     
+    func checkLoginStatus(webViewURL: String?, evaluateJavaScript: @escaping (String, @escaping (Any?, Error?) -> Void) -> Void) {
+        let script = getLoginCheckScript()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            evaluateJavaScript(script) { result, _ in
+                guard let result = result else { return }
+                self.updateLoginStatus(result, currentURL: webViewURL)
+            }
+        }
+    }
+    
+    func handlePageLoaded(webViewURL: String?, evaluateJavaScript: @escaping (String, @escaping (Any?, Error?) -> Void) -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.checkLoginStatus(webViewURL: webViewURL, evaluateJavaScript: evaluateJavaScript)
+        }
+    }
+    
     func getLoginURL() -> URL? {
         return URL(string: "https://vimeo.com/log_in")
     }
