@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		154CC1592EF03E2B00C939EA /* RightBarButtonPresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154CC1582EF03E2B00C939EA /* RightBarButtonPresentable.swift */; };
 		15987CF32EDDDDDD00242C99 /* HomeSearchResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15987CF22EDDDDDD00242C99 /* HomeSearchResultsViewController.swift */; };
 		15987CFA2EE086C400242C99 /* HomeSearchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15987CF92EE086C400242C99 /* HomeSearchModel.swift */; };
 		15987CFC2EE0892600242C99 /* HomeSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15987CFB2EE0892600242C99 /* HomeSearchService.swift */; };
@@ -53,6 +54,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		154CC1582EF03E2B00C939EA /* RightBarButtonPresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RightBarButtonPresentable.swift; sourceTree = "<group>"; };
 		15987CF22EDDDDDD00242C99 /* HomeSearchResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSearchResultsViewController.swift; sourceTree = "<group>"; };
 		15987CF92EE086C400242C99 /* HomeSearchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSearchModel.swift; sourceTree = "<group>"; };
 		15987CFB2EE0892600242C99 /* HomeSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSearchService.swift; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 		15F2259D2EEB11C5008C309C /* POP */ = {
 			isa = PBXGroup;
 			children = (
+				154CC1582EF03E2B00C939EA /* RightBarButtonPresentable.swift */,
 				15F225A72EEEB3B0008C309C /* BackButtonPresentable.swift */,
 				15F225932EEB11BC008C309C /* EmptyStatePresentable.swift */,
 				15F225942EEB11BC008C309C /* KeyboardDismissable.swift */,
@@ -552,6 +555,7 @@
 				15FF4C572ECCA8D000E7888D /* BaseMainViewController.swift in Sources */,
 				15A35ACC2EDC3D08005C25CC /* MainMeSectionProvider.swift in Sources */,
 				15F2258A2EE71081008C309C /* VideoPlayerViewModel.swift in Sources */,
+				154CC1592EF03E2B00C939EA /* RightBarButtonPresentable.swift in Sources */,
 				15FF4C602ECCB91100E7888D /* MainMeModel.swift in Sources */,
 				15FF4C592ECCAD4B00E7888D /* URLConfig.swift in Sources */,
 				15FF4C692ED20B6F00E7888D /* MainMeSubCell.swift in Sources */,

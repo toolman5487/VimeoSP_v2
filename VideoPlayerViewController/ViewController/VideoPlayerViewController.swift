@@ -11,13 +11,17 @@ import WebKit
 import SnapKit
 import Combine
 
-final class VideoPlayerViewController: UIViewController, LoadingPresentable, BackButtonPresentable {
+final class VideoPlayerViewController: UIViewController, LoadingPresentable, BackButtonPresentable, RightBarButtonPresentable {
     
     // MARK: - Properties
     
     var backButtonTopOffset: CGFloat { 16 }
     var backButtonLeadingOffset: CGFloat { 12 }
     var backButtonSize: CGFloat { 32 }
+    
+    var rightBarButtonTopOffset: CGFloat { 12 }
+    var rightBarButtonTrailingOffset: CGFloat { 16 }
+    var rightBarButtonSize: CGFloat { 40 }
     
     private let viewModel: VideoPlayerViewModel
     private var cancellables = Set<AnyCancellable>()
@@ -29,7 +33,7 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
         config.allowsAirPlayForMediaPlayback = true
         config.allowsPictureInPictureMediaPlayback = true
         let webView = WKWebView(frame: .zero, configuration: config)
-        webView.backgroundColor = .black
+        webView.backgroundColor = .vimeoWhite
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.bounces = false
         return webView
@@ -41,9 +45,6 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
         },
         onPageLoad: { [weak self] in
             self?.handlePageLoaded()
-        },
-        onPageFinish: { [weak self] in
-            self?.showBackButton(animated: true)
         },
         shouldAllowNavigation: { [weak self] url in
             self?.viewModel.isAllowedURL(url) ?? false
@@ -68,6 +69,8 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
+        setupBackButton()
+        setupRightBarButton()
         setupBindings()
         loadVideo()
     }
@@ -80,7 +83,6 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
-        setupBackButton()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -91,7 +93,7 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
     // MARK: - Setup
     
     private func setupViews() {
-        view.backgroundColor = .vimeoBlack
+        view.backgroundColor = .vimeoWhite
         
         view.addSubview(webView)
         
@@ -163,7 +165,6 @@ final class VideoPlayerViewController: UIViewController, LoadingPresentable, Bac
     }
     
     private func redirectToLogin() {
-        hideBackButton(animated: true)
         guard let loginURL = viewModel.getLoginURL() else { return }
         webView.load(URLRequest(url: loginURL))
     }
@@ -178,18 +179,15 @@ private final class WebViewNavigationDelegate: NSObject, WKNavigationDelegate {
     
     private let onLoadingChange: (Bool) -> Void
     private let onPageLoad: () -> Void
-    private let onPageFinish: () -> Void
     private let shouldAllowNavigation: (URL) -> Bool
     
     init(
         onLoadingChange: @escaping (Bool) -> Void,
         onPageLoad: @escaping () -> Void,
-        onPageFinish: @escaping () -> Void,
         shouldAllowNavigation: @escaping (URL) -> Bool
     ) {
         self.onLoadingChange = onLoadingChange
         self.onPageLoad = onPageLoad
-        self.onPageFinish = onPageFinish
         self.shouldAllowNavigation = shouldAllowNavigation
     }
     
@@ -216,7 +214,6 @@ private final class WebViewNavigationDelegate: NSObject, WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         onLoadingChange(false)
-        onPageFinish()
         onPageLoad()
     }
     
