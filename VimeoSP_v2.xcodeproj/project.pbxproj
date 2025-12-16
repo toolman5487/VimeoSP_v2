@@ -12,6 +12,8 @@
 		154CC15F2EF054E400C939EA /* MainHomeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154CC15D2EF054E400C939EA /* MainHomeModel.swift */; };
 		154CC1632EF0570200C939EA /* MainHomeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154CC1612EF0570200C939EA /* MainHomeService.swift */; };
 		154CC1662EF0584F00C939EA /* MainHomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154CC1642EF0584F00C939EA /* MainHomeViewModel.swift */; };
+		154CC16A2EF19D4900C939EA /* MainHomeSectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154CC1672EF19D4900C939EA /* MainHomeSectionCell.swift */; };
+		154CC16B2EF19D4900C939EA /* MainHomeVideoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154CC1682EF19D4900C939EA /* MainHomeVideoCell.swift */; };
 		15987CF32EDDDDDD00242C99 /* HomeSearchResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15987CF22EDDDDDD00242C99 /* HomeSearchResultsViewController.swift */; };
 		15987CFA2EE086C400242C99 /* HomeSearchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15987CF92EE086C400242C99 /* HomeSearchModel.swift */; };
 		15987CFC2EE0892600242C99 /* HomeSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15987CFB2EE0892600242C99 /* HomeSearchService.swift */; };
@@ -59,6 +61,8 @@
 		154CC15D2EF054E400C939EA /* MainHomeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeModel.swift; sourceTree = "<group>"; };
 		154CC1612EF0570200C939EA /* MainHomeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeService.swift; sourceTree = "<group>"; };
 		154CC1642EF0584F00C939EA /* MainHomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeViewModel.swift; sourceTree = "<group>"; };
+		154CC1672EF19D4900C939EA /* MainHomeSectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeSectionCell.swift; sourceTree = "<group>"; };
+		154CC1682EF19D4900C939EA /* MainHomeVideoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeVideoCell.swift; sourceTree = "<group>"; };
 		15987CF22EDDDDDD00242C99 /* HomeSearchResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSearchResultsViewController.swift; sourceTree = "<group>"; };
 		15987CF92EE086C400242C99 /* HomeSearchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSearchModel.swift; sourceTree = "<group>"; };
 		15987CFB2EE0892600242C99 /* HomeSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSearchService.swift; sourceTree = "<group>"; };
@@ -155,6 +159,15 @@
 				154CC1642EF0584F00C939EA /* MainHomeViewModel.swift */,
 			);
 			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		154CC1692EF19D4900C939EA /* View */ = {
+			isa = PBXGroup;
+			children = (
+				154CC1672EF19D4900C939EA /* MainHomeSectionCell.swift */,
+				154CC1682EF19D4900C939EA /* MainHomeVideoCell.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		15987CF12EDDDDB800242C99 /* ViewController */ = {
@@ -343,6 +356,7 @@
 		15FF4C432EC99C3F00E7888D /* MainHome */ = {
 			isa = PBXGroup;
 			children = (
+				154CC1692EF19D4900C939EA /* View */,
 				154CC1652EF0584F00C939EA /* ViewModel */,
 				154CC1622EF0570200C939EA /* Service */,
 				154CC15E2EF054E400C939EA /* Model */,
@@ -591,6 +605,8 @@
 				15FF4C482EC99C8300E7888D /* MainMeViewController.swift in Sources */,
 				15FF4C672ECE0CF700E7888D /* MainMeCell.swift in Sources */,
 				15FF4C722ED354D000E7888D /* IconStatItemModel.swift in Sources */,
+				154CC16A2EF19D4900C939EA /* MainHomeSectionCell.swift in Sources */,
+				154CC16B2EF19D4900C939EA /* MainHomeVideoCell.swift in Sources */,
 				15F225982EEB11BC008C309C /* LoadingPresentable.swift in Sources */,
 				15F225992EEB11BC008C309C /* KeyboardDismissable.swift in Sources */,
 				154CC1662EF0584F00C939EA /* MainHomeViewModel.swift in Sources */,

@@ -16,20 +16,9 @@ final class MainHomeService: MainHomeServiceProtocol {
     
     func fetchVideos(sort: VideoSortType, page: Int? = nil, perPage: Int? = nil) -> AnyPublisher<MainHomeVideoListResponse, Error> {
         Future { promise in
-            var parameters: [String: Any] = [
-                "sort": sort.rawValue,
-                "direction": "desc"
-            ]
+            let parameters = self.buildParameters(for: sort, page: page, perPage: perPage)
             
-            if let page {
-                parameters["page"] = page
-            }
-            
-            if let perPage {
-                parameters["per_page"] = perPage
-            }
-            
-            APIConfig.APIGET(path: SearchPath.videos.path, parameters: parameters) { result in
+            APIConfig.APIGET(path: "/videos", parameters: parameters) { result in
                 switch result {
                 case .success(let data):
                     do {
@@ -45,6 +34,35 @@ final class MainHomeService: MainHomeServiceProtocol {
             }
         }
         .eraseToAnyPublisher()
+    }
+    
+    private func buildParameters(for sort: VideoSortType, page: Int?, perPage: Int?) -> [String: Any] {
+        var parameters: [String: Any] = ["query": "video"]
+        
+        switch sort {
+        case .popular:
+            parameters["sort"] = "plays"
+            parameters["direction"] = "desc"
+        case .trending:
+            parameters["sort"] = "relevant"
+            parameters["direction"] = "desc"
+        case .date:
+            parameters["sort"] = "date"
+            parameters["direction"] = "desc"
+        case .alphabetical:
+            parameters["sort"] = "alphabetical"
+            parameters["direction"] = "asc"
+        }
+        
+        if let page {
+            parameters["page"] = page
+        }
+        
+        if let perPage {
+            parameters["per_page"] = perPage
+        }
+        
+        return parameters
     }
 }
 

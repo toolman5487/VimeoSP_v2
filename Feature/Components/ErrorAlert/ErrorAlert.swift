@@ -42,6 +42,8 @@ enum ErrorAlert {
         message: String,
         retryAction: (() -> Void)?
     ) {
+        guard viewController.presentedViewController == nil else { return }
+        
         let alert = UIAlertController(
             title: title,
             message: message,
