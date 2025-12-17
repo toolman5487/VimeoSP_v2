@@ -38,6 +38,10 @@ class MainHomeViewController: BaseMainViewController {
             MainHomeSectionCell.self,
             forCellWithReuseIdentifier: String(describing: MainHomeSectionCell.self)
         )
+        collectionView.register(
+            MainHomeCarouselCell.self,
+            forCellWithReuseIdentifier: String(describing: MainHomeCarouselCell.self)
+        )
     }
     
     private func setupNavBar() {
@@ -113,6 +117,9 @@ class MainHomeViewController: BaseMainViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        if indexPath.item == 0 {
+            return CGSize(width: collectionView.frame.width, height: 280)
+        }
         return CGSize(width: collectionView.frame.width, height: 240)
     }
 }
@@ -120,16 +127,33 @@ class MainHomeViewController: BaseMainViewController {
 extension MainHomeViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        sections.count
+        return 1 + sections.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if indexPath.item == 0 {
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: String(describing: MainHomeCarouselCell.self),
+                for: indexPath
+            ) as! MainHomeCarouselCell
+            
+            let latestVideos = viewModel.getVideos(for: .date)
+            cell.configure(
+                videos: latestVideos,
+                onVideoTap: { [weak self] video in
+                    self?.handleVideoTap(video)
+                }
+            )
+            
+            return cell
+        }
+       
         let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: String(describing: MainHomeSectionCell.self),
             for: indexPath
         ) as! MainHomeSectionCell
         
-        let sortType = sections[indexPath.item]
+        let sortType = sections[indexPath.item - 1]
         let videos = viewModel.getVideos(for: sortType)
         
         cell.configure(
