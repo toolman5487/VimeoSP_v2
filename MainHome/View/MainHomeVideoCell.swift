@@ -39,6 +39,15 @@ final class MainHomeVideoCell: UICollectionViewCell {
         return label
     }()
     
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .vimeoWhite
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.numberOfLines = 2
+        label.textAlignment = .left
+        return label
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupCell()
@@ -51,13 +60,21 @@ final class MainHomeVideoCell: UICollectionViewCell {
     private func setupCell() {
         contentView.addSubview(thumbnailImageView)
         contentView.addSubview(durationLabel)
+        contentView.addSubview(titleLabel)
         
         thumbnailImageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(titleLabel.snp.top)
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.leading.trailing.bottom.equalToSuperview()
+            make.height.greaterThanOrEqualTo(32)
+            make.centerX.equalTo(thumbnailImageView)
         }
         
         durationLabel.snp.makeConstraints { make in
-            make.trailing.bottom.equalToSuperview().inset(8)
+            make.trailing.bottom.equalTo(thumbnailImageView).inset(8)
             make.width.equalTo(60)
             make.height.equalTo(20)
         }
@@ -66,6 +83,8 @@ final class MainHomeVideoCell: UICollectionViewCell {
     func configure(with video: MainHomeVideo) {
         durationLabel.text = video.formattedDuration
         durationLabel.isHidden = video.formattedDuration == nil
+        
+        titleLabel.text = video.name
         
         if let urlString = video.thumbnailURL, let url = URL(string: urlString) {
             thumbnailImageView.sd_setImage(
@@ -84,6 +103,7 @@ final class MainHomeVideoCell: UICollectionViewCell {
         thumbnailImageView.image = placeholderImage
         durationLabel.text = nil
         durationLabel.isHidden = true
+        titleLabel.text = nil
     }
 }
 
