@@ -198,3 +198,4 @@ extension MainHomeCarouselCell: UICollectionViewDelegateFlowLayout {
         currentPage = min(max(0, page), videos.count - 1)
     }
 }
+

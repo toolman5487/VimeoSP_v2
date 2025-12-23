@@ -26,8 +26,8 @@ final class MainHomeViewModel: BaseViewModel {
         isLoading = true
         resetError()
         
-        let priorityTypes: [VideoSortType] = [.date, .popular, .trending]
-        let deferredTypes: [VideoSortType] = [.alphabetical]
+        let priorityTypes: [VideoSortType] = [.popular, .trending]
+        let deferredTypes: [VideoSortType] = [.date, .alphabetical]
         
         fetchVideosBatch(types: priorityTypes)
         

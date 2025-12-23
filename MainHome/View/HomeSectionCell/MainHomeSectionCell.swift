@@ -72,7 +72,7 @@ final class MainHomeSectionCell: UICollectionViewCell {
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
-            make.height.equalTo(160)
+            make.height.equalTo(200)
         }
     }
     
