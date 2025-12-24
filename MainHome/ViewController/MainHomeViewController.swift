@@ -21,7 +21,7 @@ class MainHomeViewController: BaseMainViewController {
     private let viewModel = MainHomeViewModel()
     private var cancellables = Set<AnyCancellable>()
     
-    private let sections: [VideoSortType] = [.popular, .trending]
+    private let sections: [VideoSortType] = [.trending, .popular]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,6 +34,10 @@ class MainHomeViewController: BaseMainViewController {
     override func setupCollectionView() {
         super.setupCollectionView()
         collectionView.dataSource = self
+        collectionView.register(
+            MainHomeCarouselCell.self,
+            forCellWithReuseIdentifier: String(describing: MainHomeCarouselCell.self)
+        )
         collectionView.register(
             MainHomeSectionCell.self,
             forCellWithReuseIdentifier: String(describing: MainHomeSectionCell.self)
@@ -113,6 +117,9 @@ class MainHomeViewController: BaseMainViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        if indexPath.item == 0 {
+            return CGSize(width: collectionView.frame.width, height: collectionView.frame.width * 9/16)
+        }
         return CGSize(width: collectionView.frame.width, height: 240)
     }
 }
@@ -120,16 +127,33 @@ class MainHomeViewController: BaseMainViewController {
 extension MainHomeViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        sections.count
+        return sections.count + 1
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if indexPath.item == 0 {
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: String(describing: MainHomeCarouselCell.self),
+                for: indexPath
+            ) as! MainHomeCarouselCell
+            let videos = viewModel.getVideos(for: .popular)
+            cell.configure(
+                videos: videos,
+                onVideoTap: { [weak self] video in
+                    self?.handleVideoTap(video)
+                }
+            )
+            
+            return cell
+        }
+      
         let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: String(describing: MainHomeSectionCell.self),
             for: indexPath
         ) as! MainHomeSectionCell
         
-        let sortType = sections[indexPath.item]
+        let sectionIndex = indexPath.item - 1
+        let sortType = sections[sectionIndex]
         let videos = viewModel.getVideos(for: sortType)
         
         cell.configure(
