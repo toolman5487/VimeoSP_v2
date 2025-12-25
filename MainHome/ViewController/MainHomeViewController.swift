@@ -18,8 +18,6 @@ final class MainHomeViewController: BaseMainViewController {
     
     private let sections: [VideoSortType] = [.trending]
     
-    private var carouselCellSize: CGSize?
-    private var sectionCellSize: CGSize?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,16 +42,6 @@ final class MainHomeViewController: BaseMainViewController {
         )
     }
     
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        let currentWidth = collectionView.frame.width
-        if carouselCellSize?.width != currentWidth {
-            carouselCellSize = nil
-        }
-        if sectionCellSize?.width != currentWidth {
-            sectionCellSize = nil
-        }
-    }
     
     private func setupNavBar() {
         setupLogoTitle()
@@ -121,8 +109,7 @@ final class MainHomeViewController: BaseMainViewController {
     }
     
     private func handleVideoTap(_ video: MainHomeVideo) {
-        guard let videoId = video.videoId else { return }
-        let videoURL = "https://vimeo.com/\(videoId)"
+        guard let videoURL = viewModel.getVideoURL(for: video) else { return }
         let videoPlayerViewController = VideoPlayerViewController(videoURL: videoURL)
         navigationController?.pushViewController(videoPlayerViewController, animated: true)
     }
@@ -136,20 +123,10 @@ final class MainHomeViewController: BaseMainViewController {
         let width = collectionView.frame.width
         
         if indexPath.item == 0 {
-            if let cachedSize = carouselCellSize, cachedSize.width == width {
-                return cachedSize
-            }
-            let size = CGSize(width: width, height: width * 9/16)
-            carouselCellSize = size
-            return size
+            return CGSize(width: width, height: width * 9/16)
         }
         
-        if let cachedSize = sectionCellSize, cachedSize.width == width {
-            return cachedSize
-        }
-        let size = CGSize(width: width, height: 240)
-        sectionCellSize = size
-        return size
+        return CGSize(width: width, height: 240)
     }
 }
 
@@ -207,36 +184,16 @@ extension MainHomeViewController: UICollectionViewDataSource {
 extension MainHomeViewController: UICollectionViewDataSourcePrefetching {
     
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        for indexPath in indexPaths {
+        let videos = indexPaths.compactMap { indexPath -> [MainHomeVideo]? in
             if indexPath.item == 0 {
-                let videos = viewModel.getVideos(for: .popular)
-                prefetchImages(for: videos)
+                return viewModel.getVideos(for: .popular)
             } else {
                 let sectionIndex = indexPath.item - 1
-                guard sectionIndex < sections.count else { continue }
-                let sortType = sections[sectionIndex]
-                let videos = viewModel.getVideos(for: sortType)
-                prefetchImages(for: videos)
+                guard sectionIndex < sections.count else { return nil }
+                return viewModel.getVideos(for: sections[sectionIndex])
             }
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
-        for indexPath in indexPaths {
-            if indexPath.item == 0 {
-                let videos = viewModel.getVideos(for: .popular)
-                cancelPrefetchImages(for: videos)
-            } else {
-                let sectionIndex = indexPath.item - 1
-                guard sectionIndex < sections.count else { continue }
-                let sortType = sections[sectionIndex]
-                let videos = viewModel.getVideos(for: sortType)
-                cancelPrefetchImages(for: videos)
-            }
-        }
-    }
-    
-    private func prefetchImages(for videos: [MainHomeVideo]) {
+        }.flatMap { $0 }
+        
         let urls = videos.prefix(5).compactMap { video -> URL? in
             guard let urlString = video.thumbnailURL else { return nil }
             return URL(string: urlString)
@@ -247,11 +204,7 @@ extension MainHomeViewController: UICollectionViewDataSourcePrefetching {
         }
     }
     
-    private func cancelPrefetchImages(for videos: [MainHomeVideo]) {
-        let urls = videos.compactMap { video -> URL? in
-            guard let urlString = video.thumbnailURL else { return nil }
-            return URL(string: urlString)
-        }
+    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
         SDWebImagePrefetcher.shared.cancelPrefetching()
     }
 }

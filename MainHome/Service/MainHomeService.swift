@@ -14,10 +14,7 @@ protocol MainHomeServiceProtocol {
 
 final class MainHomeService: MainHomeServiceProtocol {
     
-    private let decoder: JSONDecoder = {
-        let decoder = JSONDecoder()
-        return decoder
-    }()
+    private let decoder = JSONDecoder()
     
     private let requestQueue = DispatchQueue(label: "com.vimeo.mainhome.service", qos: .utility)
     
@@ -68,14 +65,12 @@ final class MainHomeService: MainHomeServiceProtocol {
             parameters["sort"] = "alphabetical"
             parameters["direction"] = "asc"
         }
-        
-        // Validate and add pagination parameters per Vimeo API spec
+    
         if let page = page, page > 0 {
             parameters["page"] = page
         }
         
         if let perPage = perPage, perPage > 0, perPage <= 100 {
-            // Vimeo API max per_page is 100
             parameters["per_page"] = perPage
         }
         

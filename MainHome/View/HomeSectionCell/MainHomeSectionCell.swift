@@ -12,16 +12,10 @@ import SDWebImage
 
 final class MainHomeSectionCell: UICollectionViewCell {
     
-    private let containerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .clear
-        return view
-    }()
-    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .vimeoWhite
-        label.font = .systemFont(ofSize: 24, weight: .bold)
+        label.font = .systemFont(ofSize: 20, weight: .bold)
         return label
     }()
     
@@ -46,7 +40,8 @@ final class MainHomeSectionCell: UICollectionViewCell {
     
     private var videos: [MainHomeVideo] = []
     private var onVideoTap: ((MainHomeVideo) -> Void)?
-    private var cachedTitles: [String: NSAttributedString] = [:]
+    
+    private static var cachedTitles: [String: NSAttributedString] = [:]
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -60,13 +55,8 @@ final class MainHomeSectionCell: UICollectionViewCell {
     private func setupCell() {
         backgroundColor = .clear
         
-        contentView.addSubview(containerView)
-        containerView.addSubview(titleLabel)
-        containerView.addSubview(collectionView)
-        
-        containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(collectionView)
         
         titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().inset(8)
@@ -74,24 +64,19 @@ final class MainHomeSectionCell: UICollectionViewCell {
         }
         
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom)
+            make.top.equalTo(titleLabel.snp.bottom).offset(8)
             make.leading.trailing.bottom.equalToSuperview()
             make.height.equalTo(200)
         }
     }
     
     func configure(title: String, videos: [MainHomeVideo], onVideoTap: @escaping (MainHomeVideo) -> Void) {
-        if let cachedTitle = cachedTitles[title] {
-            titleLabel.attributedText = cachedTitle
+        if let cached = Self.cachedTitles[title] {
+            titleLabel.attributedText = cached
         } else {
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                guard let self = self else { return }
-                let attributedTitle = self.createAttributedTitle(title)
-                self.cachedTitles[title] = attributedTitle
-                DispatchQueue.main.async {
-                    self.titleLabel.attributedText = attributedTitle
-                }
-            }
+            let attributedTitle = Self.createAttributedTitle(title)
+            Self.cachedTitles[title] = attributedTitle
+            titleLabel.attributedText = attributedTitle
         }
         
         let videosChanged = self.videos.count != videos.count || 
@@ -104,8 +89,8 @@ final class MainHomeSectionCell: UICollectionViewCell {
         }
     }
     
-    private func createAttributedTitle(_ text: String) -> NSAttributedString {
-        let font = UIFont.systemFont(ofSize: 24, weight: .bold)
+    private static func createAttributedTitle(_ text: String) -> NSAttributedString {
+        let font = UIFont.systemFont(ofSize: 20, weight: .bold)
         let attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: UIColor.vimeoWhite,
             .font: font
@@ -117,7 +102,7 @@ final class MainHomeSectionCell: UICollectionViewCell {
             .withTintColor(.vimeoWhite, renderingMode: .alwaysOriginal)
         
         if let image = chevronImage {
-            let imageSize = CGSize(width: 20, height: 20)
+            let imageSize = CGSize(width: 16, height: 16)
             let imageAttachment = NSTextAttachment()
             
             UIGraphicsBeginImageContextWithOptions(imageSize, false, 0)
@@ -134,9 +119,6 @@ final class MainHomeSectionCell: UICollectionViewCell {
             )
             
             let imageString = NSAttributedString(attachment: imageAttachment)
-            let spacing = NSAttributedString(string: " ", attributes: attributes)
-            
-            attributedString.append(spacing)
             attributedString.append(imageString)
         }
         
@@ -167,7 +149,7 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let height = collectionView.frame.height
+        let height = collectionView.frame.height > 0 ? collectionView.frame.height : 200
         let width = height * 16 / 9
         return CGSize(width: width, height: height)
     }
@@ -178,25 +160,6 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
         onVideoTap?(video)
     }
     
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        updateVisibleCellsPriority()
-    }
-    
-    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if !decelerate {
-            updateVisibleCellsPriority()
-        }
-    }
-    
-    private func updateVisibleCellsPriority() {
-        let visibleIndexPaths = collectionView.indexPathsForVisibleItems
-        
-        for indexPath in visibleIndexPaths {
-            guard let cell = collectionView.cellForItem(at: indexPath) as? MainHomeVideoCell,
-                  indexPath.item < videos.count else { continue }
-            cell.configure(with: videos[indexPath.item], isVisible: true)
-        }
-    }
 }
 
 extension MainHomeSectionCell: UICollectionViewDataSourcePrefetching {
@@ -215,9 +178,6 @@ extension MainHomeSectionCell: UICollectionViewDataSourcePrefetching {
         if !urls.isEmpty {
             SDWebImagePrefetcher.shared.prefetchURLs(urls, progress: nil) { _, _ in }
         }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
     }
 }
 

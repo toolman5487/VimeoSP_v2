@@ -16,6 +16,13 @@ struct URLConfig {
         }
         return url
     }()
+    
+    static let frontendBaseURL: URL = {
+        guard let url = URL(string: "https://vimeo.com") else {
+            fatalError("Invalid frontend base URL configuration")
+        }
+        return url
+    }()
 
     static var token: String {
         Bundle.main.object(forInfoDictionaryKey: "VimeoToken") as? String ?? ""

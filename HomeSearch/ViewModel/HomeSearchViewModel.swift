@@ -198,4 +198,9 @@ final class HomeSearchViewModel: BaseViewModel {
         }
         return (page * perPage) < total
     }
+    
+    func getVideoURL(for video: VimeoVideo) -> String? {
+        guard let videoId = video.videoId else { return nil }
+        return URLConfig.frontendBaseURL.appendingPathComponent(videoId).absoluteString
+    }
 }

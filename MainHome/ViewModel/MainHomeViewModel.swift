@@ -11,7 +11,6 @@ import Combine
 final class MainHomeViewModel: BaseViewModel {
     
     private let service: MainHomeServiceProtocol
-    private let cacheQueue = DispatchQueue(label: "com.vimeo.mainhome.cache", attributes: .concurrent)
     
     @Published private(set) var videoLists: [VideoSortType: [MainHomeVideo]] = [:]
     @Published private(set) var isLoadingLists: [VideoSortType: Bool] = [:]
@@ -29,20 +28,7 @@ final class MainHomeViewModel: BaseViewModel {
         isLoading = true
         resetError()
         
-        let priorityTypes: [VideoSortType] = [.popular, .trending]
-        let deferredTypes: [VideoSortType] = [.date, .alphabetical]
-        
-        fetchVideosBatch(types: priorityTypes)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.fetchVideosBatch(types: deferredTypes)
-        }
-    }
-    
-    private func fetchVideosBatch(types: [VideoSortType]) {
-        types.forEach { sortType in
-            fetchVideos(for: sortType)
-        }
+        [.popular, .trending].forEach { fetchVideos(for: $0) }
     }
     
     private func fetchVideosPublisher(for sortType: VideoSortType) -> AnyPublisher<Void, Error> {
@@ -103,19 +89,12 @@ final class MainHomeViewModel: BaseViewModel {
     }
     
     func getVideos(for sortType: VideoSortType) -> [MainHomeVideo] {
-        cacheQueue.sync {
-            videoLists[sortType] ?? []
-        }
+        videoLists[sortType] ?? []
     }
     
-    func isLoading(for sortType: VideoSortType) -> Bool {
-        isLoadingLists[sortType] ?? false
-    }
-    
-    func refreshVideos(for sortType: VideoSortType) {
-        activeRequests[sortType]?.cancel()
-        activeRequests.removeValue(forKey: sortType)
-        fetchVideos(for: sortType)
+    func getVideoURL(for video: MainHomeVideo) -> String? {
+        guard let videoId = video.videoId else { return nil }
+        return URLConfig.frontendBaseURL.appendingPathComponent(videoId).absoluteString
     }
 }
 

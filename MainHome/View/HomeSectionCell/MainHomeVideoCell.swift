@@ -64,13 +64,13 @@ final class MainHomeVideoCell: UICollectionViewCell {
         
         thumbnailImageView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(titleLabel.snp.top)
+            make.height.equalTo(thumbnailImageView.snp.width).multipliedBy(9.0 / 16.0).priority(.high)
         }
         
         titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(thumbnailImageView.snp.bottom).offset(8)
             make.leading.trailing.bottom.equalToSuperview()
-            make.height.greaterThanOrEqualTo(32)
-            make.centerX.equalTo(thumbnailImageView)
+            make.height.equalTo(40)
         }
         
         durationLabel.snp.makeConstraints { make in
@@ -108,7 +108,6 @@ final class MainHomeVideoCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         thumbnailImageView.sd_cancelCurrentImageLoad()
-        thumbnailImageView.image = placeholderImage
         durationLabel.text = nil
         durationLabel.isHidden = true
         titleLabel.text = nil
