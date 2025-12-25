@@ -12,16 +12,16 @@ import SDWebImage
 
 final class MainHomeVideoCell: UICollectionViewCell {
     
-    private var placeholderImage: UIImage? {
+    private lazy var placeholderImage: UIImage? = {
         UIImage(systemName: "photo.fill")?.withTintColor(
             .vimeoWhite.withAlphaComponent(0.4),
             renderingMode: .alwaysOriginal
         )
-    }
+    }()
     
     private let thumbnailImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 16
         imageView.backgroundColor = UIColor.vimeoWhite.withAlphaComponent(0.1)
@@ -80,17 +80,25 @@ final class MainHomeVideoCell: UICollectionViewCell {
         }
     }
     
-    func configure(with video: MainHomeVideo) {
+    func configure(with video: MainHomeVideo, isVisible: Bool = true) {
         durationLabel.text = video.formattedDuration
         durationLabel.isHidden = video.formattedDuration == nil
         
         titleLabel.text = video.name
         
         if let urlString = video.thumbnailURL, let url = URL(string: urlString) {
+            var options: SDWebImageOptions = [.retryFailed, .scaleDownLargeImages]
+            if isVisible {
+                options.insert(.highPriority)
+            } else {
+                options.insert(.lowPriority)
+            }
+            
             thumbnailImageView.sd_setImage(
                 with: url,
                 placeholderImage: placeholderImage,
-                options: [.retryFailed, .scaleDownLargeImages]
+                options: options,
+                context: [.imageScaleFactor: UIScreen.main.scale]
             )
         } else {
             thumbnailImageView.image = placeholderImage

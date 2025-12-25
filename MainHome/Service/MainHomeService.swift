@@ -14,25 +14,40 @@ protocol MainHomeServiceProtocol {
 
 final class MainHomeService: MainHomeServiceProtocol {
     
+    private let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        return decoder
+    }()
+    
+    private let requestQueue = DispatchQueue(label: "com.vimeo.mainhome.service", qos: .utility)
+    
     func fetchVideos(sort: VideoSortType, page: Int? = nil, perPage: Int? = nil) -> AnyPublisher<MainHomeVideoListResponse, Error> {
-        Future { promise in
-            let parameters = self.buildParameters(for: sort, page: page, perPage: perPage)
-            
-            APIConfig.APIGET(path: "/videos", parameters: parameters) { result in
-                switch result {
-                case .success(let data):
-                    do {
-                        let decoder = JSONDecoder()
-                        let response = try decoder.decode(MainHomeVideoListResponse.self, from: data)
-                        promise(.success(response))
-                    } catch {
-                        promise(.failure(APIError.decodingError(error)))
+        let parameters = buildParameters(for: sort, page: page, perPage: perPage)
+        
+        return Deferred {
+            Future { [weak self] promise in
+                guard let self = self else {
+                    promise(.failure(APIError.unknown(NSError(domain: "MainHomeService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Service deallocated"]))))
+                    return
+                }
+                
+                APIConfig.APIGET(path: "/videos", parameters: parameters) { result in
+                    switch result {
+                    case .success(let data):
+                        do {
+                            let response = try self.decoder.decode(MainHomeVideoListResponse.self, from: data)
+                            promise(.success(response))
+                        } catch {
+                            promise(.failure(APIError.decodingError(error)))
+                        }
+                    case .failure(let error):
+                        promise(.failure(error))
                     }
-                case .failure(let error):
-                    promise(.failure(error))
                 }
             }
         }
+        .retry(2)
+        .subscribe(on: requestQueue)
         .eraseToAnyPublisher()
     }
     
@@ -54,11 +69,13 @@ final class MainHomeService: MainHomeServiceProtocol {
             parameters["direction"] = "asc"
         }
         
-        if let page {
+        // Validate and add pagination parameters per Vimeo API spec
+        if let page = page, page > 0 {
             parameters["page"] = page
         }
         
-        if let perPage {
+        if let perPage = perPage, perPage > 0, perPage <= 100 {
+            // Vimeo API max per_page is 100
             parameters["per_page"] = perPage
         }
         

@@ -12,12 +12,12 @@ import SDWebImage
 
 final class CarouselVideoCell: UICollectionViewCell {
     
-    private var placeholderImage: UIImage? {
+    private lazy var placeholderImage: UIImage? = {
         UIImage(systemName: "photo.fill")?.withTintColor(
             .vimeoWhite.withAlphaComponent(0.4),
             renderingMode: .alwaysOriginal
         )
-    }
+    }()
     
     private let thumbnailImageView: UIImageView = {
         let imageView = UIImageView()
@@ -75,14 +75,21 @@ final class CarouselVideoCell: UICollectionViewCell {
         gradientLayer.frame = thumbnailImageView.bounds
     }
     
-    func configure(with video: MainHomeVideo) {
+    func configure(with video: MainHomeVideo, isVisible: Bool = true) {
         titleLabel.text = video.name
         
         if let urlString = video.thumbnailURL, let url = URL(string: urlString) {
+            var options: SDWebImageOptions = [.retryFailed, .scaleDownLargeImages, .highPriority]
+            if !isVisible {
+                options.remove(.highPriority)
+                options.insert(.lowPriority)
+            }
+            
             thumbnailImageView.sd_setImage(
                 with: url,
                 placeholderImage: placeholderImage,
-                options: [.retryFailed, .scaleDownLargeImages]
+                options: options,
+                context: [.imageScaleFactor: UIScreen.main.scale]
             )
         } else {
             thumbnailImageView.image = placeholderImage

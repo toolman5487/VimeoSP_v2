@@ -9,19 +9,17 @@ import Foundation
 import UIKit
 import SnapKit
 import Combine
+import SDWebImage
 
-class MainHomeViewController: BaseMainViewController {
-    
-    private enum LogoConfig {
-        static let maxWidth: CGFloat = 100
-        static let height: CGFloat = 24
-        static let imageName = "Vimeo Wordmark_White"
-    }
+final class MainHomeViewController: BaseMainViewController {
     
     private let viewModel = MainHomeViewModel()
     private var cancellables = Set<AnyCancellable>()
     
-    private let sections: [VideoSortType] = [.trending, .popular]
+    private let sections: [VideoSortType] = [.trending]
+    
+    private var carouselCellSize: CGSize?
+    private var sectionCellSize: CGSize?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,6 +32,8 @@ class MainHomeViewController: BaseMainViewController {
     override func setupCollectionView() {
         super.setupCollectionView()
         collectionView.dataSource = self
+        collectionView.prefetchDataSource = self
+        collectionView.isPrefetchingEnabled = true
         collectionView.register(
             MainHomeCarouselCell.self,
             forCellWithReuseIdentifier: String(describing: MainHomeCarouselCell.self)
@@ -44,6 +44,17 @@ class MainHomeViewController: BaseMainViewController {
         )
     }
     
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        let currentWidth = collectionView.frame.width
+        if carouselCellSize?.width != currentWidth {
+            carouselCellSize = nil
+        }
+        if sectionCellSize?.width != currentWidth {
+            sectionCellSize = nil
+        }
+    }
+    
     private func setupNavBar() {
         setupLogoTitle()
         setupSearchButton()
@@ -51,7 +62,7 @@ class MainHomeViewController: BaseMainViewController {
     }
     
     private func setupLogoTitle() {
-        let logoImageView = UIImageView(image: UIImage(named: LogoConfig.imageName))
+        let logoImageView = UIImageView(image: UIImage(named: "Vimeo Wordmark_White"))
         logoImageView.contentMode = .scaleAspectFit
         logoImageView.clipsToBounds = true
         
@@ -59,8 +70,8 @@ class MainHomeViewController: BaseMainViewController {
         containerView.addSubview(logoImageView)
         logoImageView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-            make.width.lessThanOrEqualTo(LogoConfig.maxWidth)
-            make.height.equalTo(LogoConfig.height)
+            make.width.lessThanOrEqualTo(100)
+            make.height.equalTo(24)
         }
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: containerView)
     }
@@ -82,13 +93,18 @@ class MainHomeViewController: BaseMainViewController {
     private func setupBindings() {
         viewModel.$videoLists
             .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.collectionView.reloadData()
+                guard let self = self else { return }
+                UIView.performWithoutAnimation {
+                    self.collectionView.reloadData()
+                }
             }
             .store(in: &cancellables)
         
         viewModel.$isLoading
             .receive(on: DispatchQueue.main)
+            .removeDuplicates()
             .sink { [weak self] isLoading in
                 isLoading ? self?.showLoading() : self?.hideLoading()
             }
@@ -117,53 +133,125 @@ class MainHomeViewController: BaseMainViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = collectionView.frame.width
+        
         if indexPath.item == 0 {
-            return CGSize(width: collectionView.frame.width, height: collectionView.frame.width * 9/16)
+            if let cachedSize = carouselCellSize, cachedSize.width == width {
+                return cachedSize
+            }
+            let size = CGSize(width: width, height: width * 9/16)
+            carouselCellSize = size
+            return size
         }
-        return CGSize(width: collectionView.frame.width, height: 240)
+        
+        if let cachedSize = sectionCellSize, cachedSize.width == width {
+            return cachedSize
+        }
+        let size = CGSize(width: width, height: 240)
+        sectionCellSize = size
+        return size
     }
 }
 
 extension MainHomeViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return sections.count + 1
+        sections.count + 1
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.item == 0 {
-            let cell = collectionView.dequeueReusableCell(
+            guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: String(describing: MainHomeCarouselCell.self),
                 for: indexPath
-            ) as! MainHomeCarouselCell
+            ) as? MainHomeCarouselCell else {
+                fatalError("Failed to dequeue MainHomeCarouselCell")
+            }
+            
             let videos = viewModel.getVideos(for: .popular)
-            cell.configure(
-                videos: videos,
-                onVideoTap: { [weak self] video in
-                    self?.handleVideoTap(video)
-                }
-            )
+            cell.configure(videos: videos) { [weak self] video in
+                guard let self = self else { return }
+                self.handleVideoTap(video)
+            }
             
             return cell
         }
       
-        let cell = collectionView.dequeueReusableCell(
+        guard let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: String(describing: MainHomeSectionCell.self),
             for: indexPath
-        ) as! MainHomeSectionCell
+        ) as? MainHomeSectionCell else {
+            fatalError("Failed to dequeue MainHomeSectionCell")
+        }
         
         let sectionIndex = indexPath.item - 1
+        guard sectionIndex < sections.count else {
+            return cell
+        }
+        
         let sortType = sections[sectionIndex]
         let videos = viewModel.getVideos(for: sortType)
         
         cell.configure(
             title: sortType.displayName,
-            videos: videos,
-            onVideoTap: { [weak self] video in
-                self?.handleVideoTap(video)
-            }
-        )
+            videos: videos
+        ) { [weak self] video in
+            guard let self = self else { return }
+            self.handleVideoTap(video)
+        }
         
         return cell
+    }
+}
+
+extension MainHomeViewController: UICollectionViewDataSourcePrefetching {
+    
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        for indexPath in indexPaths {
+            if indexPath.item == 0 {
+                let videos = viewModel.getVideos(for: .popular)
+                prefetchImages(for: videos)
+            } else {
+                let sectionIndex = indexPath.item - 1
+                guard sectionIndex < sections.count else { continue }
+                let sortType = sections[sectionIndex]
+                let videos = viewModel.getVideos(for: sortType)
+                prefetchImages(for: videos)
+            }
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
+        for indexPath in indexPaths {
+            if indexPath.item == 0 {
+                let videos = viewModel.getVideos(for: .popular)
+                cancelPrefetchImages(for: videos)
+            } else {
+                let sectionIndex = indexPath.item - 1
+                guard sectionIndex < sections.count else { continue }
+                let sortType = sections[sectionIndex]
+                let videos = viewModel.getVideos(for: sortType)
+                cancelPrefetchImages(for: videos)
+            }
+        }
+    }
+    
+    private func prefetchImages(for videos: [MainHomeVideo]) {
+        let urls = videos.prefix(5).compactMap { video -> URL? in
+            guard let urlString = video.thumbnailURL else { return nil }
+            return URL(string: urlString)
+        }
+        
+        if !urls.isEmpty {
+            SDWebImagePrefetcher.shared.prefetchURLs(urls, progress: nil) { _, _ in }
+        }
+    }
+    
+    private func cancelPrefetchImages(for videos: [MainHomeVideo]) {
+        let urls = videos.compactMap { video -> URL? in
+            guard let urlString = video.thumbnailURL else { return nil }
+            return URL(string: urlString)
+        }
+        SDWebImagePrefetcher.shared.cancelPrefetching()
     }
 }

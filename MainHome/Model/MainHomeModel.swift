@@ -43,14 +43,35 @@ struct MainHomeVideo: Codable {
         case pictures, stats, user, privacy
     }
     
+    private static var durationCache: [Int: String] = [:]
+    private static var videoIdCache: [String: String] = [:]
+    private static let cacheQueue = DispatchQueue(label: "com.vimeo.video.cache", attributes: .concurrent)
+    
     var formattedDuration: String? {
-        duration?.formattedDuration()
+        guard let duration = duration else { return nil }
+        return Self.cacheQueue.sync {
+            if let cached = Self.durationCache[duration] {
+                return cached
+            }
+            let formatted = duration.formattedDuration()
+            Self.durationCache[duration] = formatted
+            return formatted
+        }
     }
     
     var videoId: String? {
         guard let uri = uri else { return nil }
-        let components = uri.split(separator: "/")
-        return components.isEmpty ? nil : String(components.last ?? "")
+        return Self.cacheQueue.sync {
+            if let cached = Self.videoIdCache[uri] {
+                return cached
+            }
+            let components = uri.split(separator: "/")
+            let id = components.isEmpty ? nil : String(components.last ?? "")
+            if let id = id {
+                Self.videoIdCache[uri] = id
+            }
+            return id
+        }
     }
     
     var thumbnailURL: String? {

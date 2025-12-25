@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import SnapKit
+import SDWebImage
 
 final class MainHomeSectionCell: UICollectionViewCell {
     
@@ -35,14 +36,17 @@ final class MainHomeSectionCell: UICollectionViewCell {
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.contentInsetAdjustmentBehavior = .never
+        collectionView.isPrefetchingEnabled = true
         collectionView.delegate = self
         collectionView.dataSource = self
+        collectionView.prefetchDataSource = self
         collectionView.register(MainHomeVideoCell.self, forCellWithReuseIdentifier: String(describing: MainHomeVideoCell.self))
         return collectionView
     }()
     
     private var videos: [MainHomeVideo] = []
     private var onVideoTap: ((MainHomeVideo) -> Void)?
+    private var cachedTitles: [String: NSAttributedString] = [:]
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -65,7 +69,7 @@ final class MainHomeSectionCell: UICollectionViewCell {
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview()
+            make.top.equalToSuperview().inset(8)
             make.leading.trailing.equalToSuperview().inset(16)
         }
         
@@ -77,10 +81,27 @@ final class MainHomeSectionCell: UICollectionViewCell {
     }
     
     func configure(title: String, videos: [MainHomeVideo], onVideoTap: @escaping (MainHomeVideo) -> Void) {
-        titleLabel.attributedText = createAttributedTitle(title)
+        if let cachedTitle = cachedTitles[title] {
+            titleLabel.attributedText = cachedTitle
+        } else {
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                guard let self = self else { return }
+                let attributedTitle = self.createAttributedTitle(title)
+                self.cachedTitles[title] = attributedTitle
+                DispatchQueue.main.async {
+                    self.titleLabel.attributedText = attributedTitle
+                }
+            }
+        }
+        
+        let videosChanged = self.videos.count != videos.count || 
+            (videos.count > 0 && self.videos.count > 0 && self.videos[0].videoId != videos[0].videoId)
         self.videos = videos
         self.onVideoTap = onVideoTap
-        collectionView.reloadData()
+        
+        if videosChanged {
+            collectionView.reloadData()
+        }
     }
     
     private func createAttributedTitle(_ text: String) -> NSAttributedString {
@@ -139,7 +160,9 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
             return cell
         }
         
-        videoCell.configure(with: videos[indexPath.item])
+        let visibleIndexPaths = collectionView.indexPathsForVisibleItems
+        let isVisible = visibleIndexPaths.contains(indexPath)
+        videoCell.configure(with: videos[indexPath.item], isVisible: isVisible)
         return videoCell
     }
     
@@ -153,6 +176,48 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
         collectionView.deselectItem(at: indexPath, animated: true)
         let video = videos[indexPath.item]
         onVideoTap?(video)
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        updateVisibleCellsPriority()
+    }
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+            updateVisibleCellsPriority()
+        }
+    }
+    
+    private func updateVisibleCellsPriority() {
+        let visibleIndexPaths = collectionView.indexPathsForVisibleItems
+        
+        for indexPath in visibleIndexPaths {
+            guard let cell = collectionView.cellForItem(at: indexPath) as? MainHomeVideoCell,
+                  indexPath.item < videos.count else { continue }
+            cell.configure(with: videos[indexPath.item], isVisible: true)
+        }
+    }
+}
+
+extension MainHomeSectionCell: UICollectionViewDataSourcePrefetching {
+    
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        let videosToPrefetch = indexPaths.compactMap { indexPath -> MainHomeVideo? in
+            guard indexPath.item < videos.count else { return nil }
+            return videos[indexPath.item]
+        }
+        
+        let urls = videosToPrefetch.compactMap { video -> URL? in
+            guard let urlString = video.thumbnailURL else { return nil }
+            return URL(string: urlString)
+        }
+        
+        if !urls.isEmpty {
+            SDWebImagePrefetcher.shared.prefetchURLs(urls, progress: nil) { _, _ in }
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
     }
 }
 

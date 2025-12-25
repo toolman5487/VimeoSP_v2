@@ -11,9 +11,12 @@ import Combine
 final class MainHomeViewModel: BaseViewModel {
     
     private let service: MainHomeServiceProtocol
+    private let cacheQueue = DispatchQueue(label: "com.vimeo.mainhome.cache", attributes: .concurrent)
     
     @Published private(set) var videoLists: [VideoSortType: [MainHomeVideo]] = [:]
     @Published private(set) var isLoadingLists: [VideoSortType: Bool] = [:]
+    
+    private var activeRequests: [VideoSortType: AnyCancellable] = [:]
     
     init(service: MainHomeServiceProtocol = MainHomeService()) {
         self.service = service
@@ -42,33 +45,57 @@ final class MainHomeViewModel: BaseViewModel {
         }
     }
     
-    func fetchVideos(for sortType: VideoSortType) {
+    private func fetchVideosPublisher(for sortType: VideoSortType) -> AnyPublisher<Void, Error> {
+        guard isLoadingLists[sortType] != true else {
+            return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher()
+        }
+        
         isLoadingLists[sortType] = true
         
-        service.fetchVideos(sort: sortType, page: 1, perPage: 10)
+        return service.fetchVideos(sort: sortType, page: 1, perPage: 10)
             .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { [weak self] completion in
+            .handleEvents(
+                receiveOutput: { [weak self] response in
                     guard let self = self else { return }
-                    self.isLoadingLists[sortType] = false
-                    self.updateOverallLoadingState()
-                    
-                    if case .failure(let error) = completion {
-                        if let apiError = error as? APIError {
-                            self.error = apiError
-                        } else {
-                            self.error = APIError.unknown(error)
-                        }
+                    if let data = response.data, !data.isEmpty {
+                        self.videoLists[sortType] = data
                     }
-                },
-                receiveValue: { [weak self] response in
-                    guard let self = self else { return }
-                    self.videoLists[sortType] = response.data ?? []
                     self.isLoadingLists[sortType] = false
                     self.updateOverallLoadingState()
+                },
+                receiveCompletion: { [weak self] _ in
+                    guard let self = self else { return }
+                    self.isLoadingLists[sortType] = false
+                    self.updateOverallLoadingState()
+                    self.activeRequests.removeValue(forKey: sortType)
                 }
             )
-            .store(in: &cancellables)
+            .map { _ in () }
+            .catch { [weak self] error -> AnyPublisher<Void, Error> in
+                guard let self = self else {
+                    return Fail(error: error).eraseToAnyPublisher()
+                }
+                if let apiError = error as? APIError {
+                    self.error = apiError
+                } else {
+                    self.error = APIError.unknown(error)
+                }
+                return Fail(error: error).eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    func fetchVideos(for sortType: VideoSortType) {
+        guard activeRequests[sortType] == nil else { return }
+        
+        let cancellable = fetchVideosPublisher(for: sortType)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { _ in }
+            )
+        
+        activeRequests[sortType] = cancellable
+        cancellable.store(in: &cancellables)
     }
     
     private func updateOverallLoadingState() {
@@ -76,11 +103,19 @@ final class MainHomeViewModel: BaseViewModel {
     }
     
     func getVideos(for sortType: VideoSortType) -> [MainHomeVideo] {
-        videoLists[sortType] ?? []
+        cacheQueue.sync {
+            videoLists[sortType] ?? []
+        }
     }
     
     func isLoading(for sortType: VideoSortType) -> Bool {
         isLoadingLists[sortType] ?? false
+    }
+    
+    func refreshVideos(for sortType: VideoSortType) {
+        activeRequests[sortType]?.cancel()
+        activeRequests.removeValue(forKey: sortType)
+        fetchVideos(for: sortType)
     }
 }
 

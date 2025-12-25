@@ -17,12 +17,12 @@ final class MainHomeCarouselCell: UICollectionViewCell {
         static let pageControlHeight: CGFloat = 30
     }
     
-    private var placeholderImage: UIImage? {
+    private lazy var placeholderImage: UIImage? = {
         UIImage(systemName: "photo.fill")?.withTintColor(
             .vimeoWhite.withAlphaComponent(0.4),
             renderingMode: .alwaysOriginal
         )
-    }
+    }()
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -34,8 +34,10 @@ final class MainHomeCarouselCell: UICollectionViewCell {
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.isPagingEnabled = true
+        collectionView.isPrefetchingEnabled = true
         collectionView.delegate = self
         collectionView.dataSource = self
+        collectionView.prefetchDataSource = self
         collectionView.register(CarouselVideoCell.self, forCellWithReuseIdentifier: String(describing: CarouselVideoCell.self))
         return collectionView
     }()
@@ -155,7 +157,9 @@ extension MainHomeCarouselCell: UICollectionViewDataSource {
         ) as! CarouselVideoCell
         
         let video = videos[indexPath.item]
-        cell.configure(with: video)
+        let visibleIndexPaths = collectionView.indexPathsForVisibleItems
+        let isVisible = visibleIndexPaths.contains(indexPath)
+        cell.configure(with: video, isVisible: isVisible)
         return cell
     }
 }
@@ -196,6 +200,38 @@ extension MainHomeCarouselCell: UICollectionViewDelegateFlowLayout {
         guard pageWidth > 0 else { return }
         let page = Int(collectionView.contentOffset.x / pageWidth)
         currentPage = min(max(0, page), videos.count - 1)
+        updateVisibleCellPriority()
+    }
+    
+    private func updateVisibleCellPriority() {
+        let visibleIndexPaths = collectionView.indexPathsForVisibleItems
+        for indexPath in visibleIndexPaths {
+            guard let cell = collectionView.cellForItem(at: indexPath) as? CarouselVideoCell,
+                  indexPath.item < videos.count else { continue }
+            cell.configure(with: videos[indexPath.item], isVisible: true)
+        }
+    }
+}
+
+extension MainHomeCarouselCell: UICollectionViewDataSourcePrefetching {
+    
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        let videosToPrefetch = indexPaths.compactMap { indexPath -> MainHomeVideo? in
+            guard indexPath.item < videos.count else { return nil }
+            return videos[indexPath.item]
+        }
+        
+        let urls = videosToPrefetch.compactMap { video -> URL? in
+            guard let urlString = video.thumbnailURL else { return nil }
+            return URL(string: urlString)
+        }
+        
+        if !urls.isEmpty {
+            SDWebImagePrefetcher.shared.prefetchURLs(urls, progress: nil) { _, _ in }
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
     }
 }
 
