@@ -15,8 +15,7 @@ final class MainHomeViewController: BaseMainViewController {
     
     private let viewModel = MainHomeViewModel()
     private var cancellables = Set<AnyCancellable>()
-    
-    private let sections: [VideoSortType] = [.trending]
+    private let sections: [VideoSortType] = [.trending, .date]
     
     
     override func viewDidLoad() {
@@ -165,7 +164,7 @@ extension MainHomeViewController: UICollectionViewDataSource {
             
             return cell
         }
-      
+        
         let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: String(describing: MainHomeSectionCell.self),
             for: indexPath

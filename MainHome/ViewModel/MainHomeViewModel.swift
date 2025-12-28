@@ -28,7 +28,7 @@ final class MainHomeViewModel: BaseViewModel {
         isLoading = true
         resetError()
         
-        [.popular, .trending].forEach { fetchVideos(for: $0) }
+        [.popular, .trending, .date].forEach { fetchVideos(for: $0) }
     }
     
     private func fetchVideosPublisher(for sortType: VideoSortType) -> AnyPublisher<Void, Error> {
