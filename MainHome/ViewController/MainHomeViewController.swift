@@ -95,12 +95,7 @@ final class MainHomeViewController: BaseMainViewController {
             .removeDuplicates()
             .sink { [weak self] isLoading in
                 guard let self = self else { return }
-                if isLoading {
-                    if !self.isRefreshing {
-                        self.showLoading()
-                    }
-                } else {
-                    self.hideLoading()
+                if !isLoading {
                     self.endRefreshing()
                 }
             }

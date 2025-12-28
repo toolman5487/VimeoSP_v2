@@ -130,7 +130,12 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height = collectionView.frame.height > 0 ? collectionView.frame.height : 200
-        let width = height * 16 / 9
+        let layout = collectionViewLayout as! UICollectionViewFlowLayout
+        let leftInset = layout.sectionInset.left
+        let rightInset = layout.sectionInset.right
+        let spacing = layout.minimumInteritemSpacing
+        let availableWidth = collectionView.frame.width - leftInset - rightInset
+        let width = (availableWidth - spacing) / 1.5
         return CGSize(width: width, height: height)
     }
     
