@@ -105,6 +105,7 @@ final class HomeSearchResultsViewController: UIViewController, AlertPresentable 
     private func setupSearchBar() {
         searchBar.delegate = self
         navigationItem.titleView = searchBar
+        navigationItem.largeTitleDisplayMode = .never
         
         searchBar.searchTextField.textColor = .systemBackground
         searchBar.searchTextField.backgroundColor = .label

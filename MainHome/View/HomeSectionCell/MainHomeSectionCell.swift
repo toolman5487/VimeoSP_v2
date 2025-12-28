@@ -41,8 +41,6 @@ final class MainHomeSectionCell: UICollectionViewCell {
     private var videos: [MainHomeVideo] = []
     private var onVideoTap: ((MainHomeVideo) -> Void)?
     
-    private static var cachedTitles: [String: NSAttributedString] = [:]
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupCell()
@@ -71,13 +69,7 @@ final class MainHomeSectionCell: UICollectionViewCell {
     }
     
     func configure(title: String, videos: [MainHomeVideo], onVideoTap: @escaping (MainHomeVideo) -> Void) {
-        if let cached = Self.cachedTitles[title] {
-            titleLabel.attributedText = cached
-        } else {
-            let attributedTitle = Self.createAttributedTitle(title)
-            Self.cachedTitles[title] = attributedTitle
-            titleLabel.attributedText = attributedTitle
-        }
+        titleLabel.attributedText = Self.createAttributedTitle(title)
         
         let videosChanged = self.videos.count != videos.count || 
             (videos.count > 0 && self.videos.count > 0 && self.videos[0].videoId != videos[0].videoId)
@@ -98,30 +90,22 @@ final class MainHomeSectionCell: UICollectionViewCell {
         
         let attributedString = NSMutableAttributedString(string: text, attributes: attributes)
         
-        let chevronImage = UIImage(systemName: "chevron.right")?
-            .withTintColor(.vimeoWhite, renderingMode: .alwaysOriginal)
-        
-        if let image = chevronImage {
-            let imageSize = CGSize(width: 16, height: 16)
-            let imageAttachment = NSTextAttachment()
-            
-            UIGraphicsBeginImageContextWithOptions(imageSize, false, 0)
-            image.draw(in: CGRect(origin: .zero, size: imageSize))
-            let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
-            
-            imageAttachment.image = resizedImage
-            imageAttachment.bounds = CGRect(
-                x: 0,
-                y: (font.capHeight - imageSize.height) / 2,
-                width: imageSize.width,
-                height: imageSize.height
-            )
-            
-            let imageString = NSAttributedString(attachment: imageAttachment)
-            attributedString.append(imageString)
+        guard let chevronImage = UIImage(systemName: "chevron.right")?
+            .withTintColor(.vimeoWhite, renderingMode: .alwaysOriginal) else {
+            return attributedString
         }
         
+        let imageSize = CGSize(width: 16, height: 16)
+        let imageAttachment = NSTextAttachment()
+        imageAttachment.image = chevronImage
+        imageAttachment.bounds = CGRect(
+            x: 0,
+            y: (font.capHeight - imageSize.height) / 2,
+            width: imageSize.width,
+            height: imageSize.height
+        )
+        
+        attributedString.append(NSAttributedString(attachment: imageAttachment))
         return attributedString
     }
 }
@@ -136,16 +120,12 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
         let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: String(describing: MainHomeVideoCell.self),
             for: indexPath
-        )
-        
-        guard let videoCell = cell as? MainHomeVideoCell else {
-            return cell
-        }
+        ) as! MainHomeVideoCell
         
         let visibleIndexPaths = collectionView.indexPathsForVisibleItems
         let isVisible = visibleIndexPaths.contains(indexPath)
-        videoCell.configure(with: videos[indexPath.item], isVisible: isVisible)
-        return videoCell
+        cell.configure(with: videos[indexPath.item], isVisible: isVisible)
+        return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {

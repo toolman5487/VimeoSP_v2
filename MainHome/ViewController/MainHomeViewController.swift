@@ -46,7 +46,7 @@ final class MainHomeViewController: BaseMainViewController {
     private func setupNavBar() {
         setupLogoTitle()
         setupSearchButton()
-        navigationItem.largeTitleDisplayMode = .never
+        navigationItem.largeTitleDisplayMode = .automatic
     }
     
     private func setupLogoTitle() {
@@ -94,7 +94,15 @@ final class MainHomeViewController: BaseMainViewController {
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
             .sink { [weak self] isLoading in
-                isLoading ? self?.showLoading() : self?.hideLoading()
+                guard let self = self else { return }
+                if isLoading {
+                    if !self.isRefreshing {
+                        self.showLoading()
+                    }
+                } else {
+                    self.hideLoading()
+                    self.endRefreshing()
+                }
             }
             .store(in: &cancellables)
         
@@ -103,9 +111,14 @@ final class MainHomeViewController: BaseMainViewController {
             .compactMap { $0 }
             .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
             .sink { [weak self] error in
+                self?.endRefreshing()
                 self?.showError(error, title: "Error")
             }
             .store(in: &cancellables)
+    }
+    
+    override func handleRefresh() {
+        viewModel.fetchAllVideoLists()
     }
     
     private func handleVideoTap(_ video: MainHomeVideo) {
@@ -138,12 +151,10 @@ extension MainHomeViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.item == 0 {
-            guard let cell = collectionView.dequeueReusableCell(
+            let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: String(describing: MainHomeCarouselCell.self),
                 for: indexPath
-            ) as? MainHomeCarouselCell else {
-                fatalError("Failed to dequeue MainHomeCarouselCell")
-            }
+            ) as! MainHomeCarouselCell
             
             let videos = viewModel.getVideos(for: .popular)
             cell.configure(videos: videos) { [weak self] video in
@@ -154,12 +165,10 @@ extension MainHomeViewController: UICollectionViewDataSource {
             return cell
         }
       
-        guard let cell = collectionView.dequeueReusableCell(
+        let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: String(describing: MainHomeSectionCell.self),
             for: indexPath
-        ) as? MainHomeSectionCell else {
-            fatalError("Failed to dequeue MainHomeSectionCell")
-        }
+        ) as! MainHomeSectionCell
         
         let sectionIndex = indexPath.item - 1
         guard sectionIndex < sections.count else {
@@ -184,16 +193,7 @@ extension MainHomeViewController: UICollectionViewDataSource {
 extension MainHomeViewController: UICollectionViewDataSourcePrefetching {
     
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        let videos = indexPaths.compactMap { indexPath -> [MainHomeVideo]? in
-            if indexPath.item == 0 {
-                return viewModel.getVideos(for: .popular)
-            } else {
-                let sectionIndex = indexPath.item - 1
-                guard sectionIndex < sections.count else { return nil }
-                return viewModel.getVideos(for: sections[sectionIndex])
-            }
-        }.flatMap { $0 }
-        
+        let videos = indexPaths.compactMap { getVideosForIndexPath($0) }.flatMap { $0 }
         let urls = videos.prefix(5).compactMap { video -> URL? in
             guard let urlString = video.thumbnailURL else { return nil }
             return URL(string: urlString)
@@ -206,5 +206,15 @@ extension MainHomeViewController: UICollectionViewDataSourcePrefetching {
     
     func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
         SDWebImagePrefetcher.shared.cancelPrefetching()
+    }
+    
+    private func getVideosForIndexPath(_ indexPath: IndexPath) -> [MainHomeVideo]? {
+        if indexPath.item == 0 {
+            return viewModel.getVideos(for: .popular)
+        } else {
+            let sectionIndex = indexPath.item - 1
+            guard sectionIndex < sections.count else { return nil }
+            return viewModel.getVideos(for: sections[sectionIndex])
+        }
     }
 }

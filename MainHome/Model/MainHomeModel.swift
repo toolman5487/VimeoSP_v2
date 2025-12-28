@@ -77,10 +77,6 @@ struct MainHomeVideo: Codable {
     var thumbnailURL: String? {
         pictures?.mediumPictureURL
     }
-    
-    var formattedStats: String? {
-        stats?.formattedPlays
-    }
 }
 
 // MARK: - Video Sort Type

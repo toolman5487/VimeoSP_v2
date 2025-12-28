@@ -17,13 +17,6 @@ final class MainHomeCarouselCell: UICollectionViewCell {
         static let pageControlHeight: CGFloat = 30
     }
     
-    private lazy var placeholderImage: UIImage? = {
-        UIImage(systemName: "photo.fill")?.withTintColor(
-            .vimeoWhite.withAlphaComponent(0.4),
-            renderingMode: .alwaysOriginal
-        )
-    }()
-    
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -101,7 +94,6 @@ final class MainHomeCarouselCell: UICollectionViewCell {
     }
     
     private func scrollToFirstPage() {
-        guard videos.count > 0 else { return }
         let indexPath = IndexPath(item: 0, section: 0)
         collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
         currentPage = 0
@@ -200,16 +192,6 @@ extension MainHomeCarouselCell: UICollectionViewDelegateFlowLayout {
         guard pageWidth > 0 else { return }
         let page = Int(collectionView.contentOffset.x / pageWidth)
         currentPage = min(max(0, page), videos.count - 1)
-        updateVisibleCellPriority()
-    }
-    
-    private func updateVisibleCellPriority() {
-        let visibleIndexPaths = collectionView.indexPathsForVisibleItems
-        for indexPath in visibleIndexPaths {
-            guard let cell = collectionView.cellForItem(at: indexPath) as? CarouselVideoCell,
-                  indexPath.item < videos.count else { continue }
-            cell.configure(with: videos[indexPath.item], isVisible: true)
-        }
     }
 }
 
@@ -232,6 +214,7 @@ extension MainHomeCarouselCell: UICollectionViewDataSourcePrefetching {
     }
     
     func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
+        SDWebImagePrefetcher.shared.cancelPrefetching()
     }
 }
 
