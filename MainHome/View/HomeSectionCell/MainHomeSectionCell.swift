@@ -58,7 +58,7 @@ final class MainHomeSectionCell: UICollectionViewCell {
         contentView.addSubview(collectionView)
         
         titleLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(8)
+            make.leading.equalToSuperview().inset(16)
             make.top.trailing.equalToSuperview()
             make.bottom.equalTo(collectionView.snp.top)
         }

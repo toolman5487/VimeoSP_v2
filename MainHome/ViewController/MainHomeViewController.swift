@@ -46,7 +46,7 @@ final class MainHomeViewController: BaseMainViewController {
     private func setupNavBar() {
         setupLogoTitle()
         setupSearchButton()
-        navigationItem.largeTitleDisplayMode = .automatic
+        navigationItem.largeTitleDisplayMode = .never
     }
     
     private func setupLogoTitle() {
@@ -54,14 +54,20 @@ final class MainHomeViewController: BaseMainViewController {
         logoImageView.contentMode = .scaleAspectFit
         logoImageView.clipsToBounds = true
         
-        let containerView = UIView()
-        containerView.addSubview(logoImageView)
+        let logoButton = UIButton(type: .custom)
+        logoButton.addSubview(logoImageView)
+        logoButton.addTarget(self, action: #selector(logoButtonTapped), for: .touchUpInside)
+        
         logoImageView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
             make.width.lessThanOrEqualTo(100)
             make.height.equalTo(24)
         }
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: containerView)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: logoButton)
+    }
+    
+    @objc private func logoButtonTapped() {
+        collectionView.setContentOffset(.zero, animated: true)
     }
     
     private func setupSearchButton() {
