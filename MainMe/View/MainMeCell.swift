@@ -27,14 +27,13 @@ class MainMeAvatarCell: UICollectionViewCell, MainMeSectionProvider {
     }
     
     private let preferredSize: PictureSizeType = .size100
+    private let placeholder: UIImage? = {
+        UIImage(systemName: "person.circle.fill")?.withTintColor(UIColor.vimeoWhite, renderingMode: .alwaysOriginal)
+    }()
     
     private let containerView: UIView = {
         let view = UIView()
         return view
-    }()
-    
-    private let placeholder: UIImage? = {
-        UIImage(systemName: "person.circle.fill")?.withTintColor(UIColor.vimeoWhite, renderingMode: .alwaysOriginal)
     }()
     
     private let imageView: UIImageView = {
@@ -293,9 +292,7 @@ class MainMeEntranceCell: UICollectionViewCell, MainMeTappableSection {
         return collectionViewHeight + 16
     }
     
-    func configure(with viewModel: MainMeViewModel) {
-        configure(with: viewModel, onTap: { _ in })
-    }
+    private var cancellables = Set<AnyCancellable>()
     
     private let collectionView: IconStatItemCollectionView = {
         let view = IconStatItemCollectionView()
@@ -304,7 +301,9 @@ class MainMeEntranceCell: UICollectionViewCell, MainMeTappableSection {
         return view
     }()
     
-    private var cancellables = Set<AnyCancellable>()
+    func configure(with viewModel: MainMeViewModel) {
+        configure(with: viewModel, onTap: { _ in })
+    }
     var tapPublisher: AnyPublisher<String?, Never> {
         collectionView.tapPublisher
     }

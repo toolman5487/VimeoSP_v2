@@ -17,6 +17,15 @@ final class MainHomeCarouselCell: UICollectionViewCell {
         static let pageControlHeight: CGFloat = 30
     }
     
+    private var videos: [MainHomeVideo] = []
+    private var onVideoTap: ((MainHomeVideo) -> Void)?
+    private var autoScrollTimer: Timer?
+    private var currentPage: Int = 0 {
+        didSet {
+            pageControl.currentPage = currentPage
+        }
+    }
+    
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -42,15 +51,6 @@ final class MainHomeCarouselCell: UICollectionViewCell {
         control.hidesForSinglePage = true
         return control
     }()
-    
-    private var videos: [MainHomeVideo] = []
-    private var onVideoTap: ((MainHomeVideo) -> Void)?
-    private var autoScrollTimer: Timer?
-    private var currentPage: Int = 0 {
-        didSet {
-            pageControl.currentPage = currentPage
-        }
-    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)

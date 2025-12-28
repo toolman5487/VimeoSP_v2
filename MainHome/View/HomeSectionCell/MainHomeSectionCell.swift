@@ -12,6 +12,10 @@ import SDWebImage
 
 final class MainHomeSectionCell: UICollectionViewCell {
     
+    private var videos: [MainHomeVideo] = []
+    private var onVideoTap: ((MainHomeVideo) -> Void)?
+    private var cachedCellSize: CGSize?
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .vimeoWhite
@@ -38,9 +42,6 @@ final class MainHomeSectionCell: UICollectionViewCell {
         return collectionView
     }()
     
-    private var videos: [MainHomeVideo] = []
-    private var onVideoTap: ((MainHomeVideo) -> Void)?
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupCell()
@@ -57,8 +58,9 @@ final class MainHomeSectionCell: UICollectionViewCell {
         contentView.addSubview(collectionView)
         
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(8)
-            make.leading.trailing.equalToSuperview().inset(16)
+            make.leading.equalToSuperview().inset(8)
+            make.top.trailing.equalToSuperview()
+            make.bottom.equalTo(collectionView.snp.top)
         }
         
         collectionView.snp.makeConstraints { make in
@@ -77,6 +79,7 @@ final class MainHomeSectionCell: UICollectionViewCell {
         self.onVideoTap = onVideoTap
         
         if videosChanged {
+            cachedCellSize = nil
             collectionView.reloadData()
         }
     }
@@ -122,21 +125,27 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
             for: indexPath
         ) as! MainHomeVideoCell
         
-        let visibleIndexPaths = collectionView.indexPathsForVisibleItems
-        let isVisible = visibleIndexPaths.contains(indexPath)
-        cell.configure(with: videos[indexPath.item], isVisible: isVisible)
+        cell.configure(with: videos[indexPath.item], isVisible: true)
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height = collectionView.frame.height > 0 ? collectionView.frame.height : 200
+        
+        if let cached = cachedCellSize, cached.height == height {
+            return cached
+        }
+        
         let layout = collectionViewLayout as! UICollectionViewFlowLayout
         let leftInset = layout.sectionInset.left
         let rightInset = layout.sectionInset.right
         let spacing = layout.minimumInteritemSpacing
         let availableWidth = collectionView.frame.width - leftInset - rightInset
         let width = (availableWidth - spacing) / 1.5
-        return CGSize(width: width, height: height)
+        
+        let size = CGSize(width: width, height: height)
+        cachedCellSize = size
+        return size
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -163,6 +172,9 @@ extension MainHomeSectionCell: UICollectionViewDataSourcePrefetching {
         if !urls.isEmpty {
             SDWebImagePrefetcher.shared.prefetchURLs(urls, progress: nil) { _, _ in }
         }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
     }
 }
 
