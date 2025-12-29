@@ -60,7 +60,6 @@ final class MainHomeSectionCell: UICollectionViewCell {
         titleLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.top.trailing.equalToSuperview()
-            make.bottom.equalTo(collectionView.snp.top)
         }
         
         collectionView.snp.makeConstraints { make in
