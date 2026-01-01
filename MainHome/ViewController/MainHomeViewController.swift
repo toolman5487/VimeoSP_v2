@@ -157,7 +157,8 @@ extension MainHomeViewController: UICollectionViewDataSource {
             ) as! MainHomeCarouselCell
             
             let videos = viewModel.getVideos(for: .popular)
-            cell.configure(videos: videos) { [weak self] video in
+            let isLoading = viewModel.isLoading(for: .popular)
+            cell.configure(videos: videos, isLoading: isLoading) { [weak self] video in
                 guard let self = self else { return }
                 self.handleVideoTap(video)
             }

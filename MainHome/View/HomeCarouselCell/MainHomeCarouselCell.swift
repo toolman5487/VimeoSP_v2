@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 import SDWebImage
+import SkeletonView
 
 final class MainHomeCarouselCell: UICollectionViewCell {
     
@@ -20,6 +21,7 @@ final class MainHomeCarouselCell: UICollectionViewCell {
     private var videos: [MainHomeVideo] = []
     private var onVideoTap: ((MainHomeVideo) -> Void)?
     private var autoScrollTimer: Timer?
+    private var isLoading: Bool = false
     private var currentPage: Int = 0 {
         didSet {
             pageControl.currentPage = currentPage
@@ -79,9 +81,11 @@ final class MainHomeCarouselCell: UICollectionViewCell {
     }
     
     func configure(videos: [MainHomeVideo], onVideoTap: @escaping (MainHomeVideo) -> Void) {
+        self.isLoading = false
         self.videos = videos
         self.onVideoTap = onVideoTap
         pageControl.numberOfPages = videos.count
+        pageControl.isHidden = false
         
         collectionView.reloadData()
         
@@ -90,6 +94,38 @@ final class MainHomeCarouselCell: UICollectionViewCell {
                 self?.scrollToFirstPage()
             }
             startAutoScroll()
+        }
+    }
+    
+    func configure(videos: [MainHomeVideo], isLoading: Bool, onVideoTap: @escaping (MainHomeVideo) -> Void) {
+        self.onVideoTap = onVideoTap
+        self.isLoading = isLoading
+        
+        if isLoading && videos.isEmpty {
+            self.videos = []
+            pageControl.isHidden = true
+            collectionView.reloadData()
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.scrollToFirstPage()
+                self?.collectionView.visibleCells.compactMap { $0 as? CarouselVideoCell }.forEach { $0.showSkeleton() }
+            }
+        } else {
+            self.videos = videos
+            pageControl.numberOfPages = videos.count
+            pageControl.isHidden = false
+            collectionView.reloadData()
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.collectionView.visibleCells.compactMap { $0 as? CarouselVideoCell }.forEach { $0.hideSkeleton() }
+            }
+            
+            if videos.count > 1 {
+                DispatchQueue.main.async { [weak self] in
+                    self?.scrollToFirstPage()
+                }
+                startAutoScroll()
+            }
         }
     }
     
@@ -126,8 +162,10 @@ final class MainHomeCarouselCell: UICollectionViewCell {
         super.prepareForReuse()
         stopAutoScroll()
         videos = []
+        isLoading = false
         currentPage = 0
         pageControl.numberOfPages = 0
+        pageControl.isHidden = false
     }
     
     deinit {
@@ -139,7 +177,10 @@ final class MainHomeCarouselCell: UICollectionViewCell {
 extension MainHomeCarouselCell: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        videos.count
+        if isLoading && videos.isEmpty {
+            return 3
+        }
+        return videos.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -148,10 +189,18 @@ extension MainHomeCarouselCell: UICollectionViewDataSource {
             for: indexPath
         ) as! CarouselVideoCell
         
-        let video = videos[indexPath.item]
-        let visibleIndexPaths = collectionView.indexPathsForVisibleItems
-        let isVisible = visibleIndexPaths.contains(indexPath)
-        cell.configure(with: video, isVisible: isVisible)
+        if isLoading && videos.isEmpty {
+            cell.showSkeleton()
+        } else {
+            guard indexPath.item < videos.count else {
+                cell.showSkeleton()
+                return cell
+            }
+            let video = videos[indexPath.item]
+            let visibleIndexPaths = collectionView.indexPathsForVisibleItems
+            let isVisible = visibleIndexPaths.contains(indexPath)
+            cell.configure(with: video, isVisible: isVisible)
+        }
         return cell
     }
 }
@@ -164,6 +213,7 @@ extension MainHomeCarouselCell: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard !isLoading, indexPath.item < videos.count else { return }
         let video = videos[indexPath.item]
         onVideoTap?(video)
     }
@@ -191,13 +241,16 @@ extension MainHomeCarouselCell: UICollectionViewDelegateFlowLayout {
         let pageWidth = collectionView.frame.width
         guard pageWidth > 0 else { return }
         let page = Int(collectionView.contentOffset.x / pageWidth)
-        currentPage = min(max(0, page), videos.count - 1)
+        let maxPage = isLoading && videos.isEmpty ? 2 : max(0, videos.count - 1)
+        currentPage = min(max(0, page), maxPage)
     }
 }
 
 extension MainHomeCarouselCell: UICollectionViewDataSourcePrefetching {
     
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        guard !isLoading else { return }
+        
         let videosToPrefetch = indexPaths.compactMap { indexPath -> MainHomeVideo? in
             guard indexPath.item < videos.count else { return nil }
             return videos[indexPath.item]

@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 import SDWebImage
+import SkeletonView
 
 final class CarouselVideoCell: UICollectionViewCell {
     
@@ -68,6 +69,11 @@ final class CarouselVideoCell: UICollectionViewCell {
             make.leading.trailing.equalToSuperview().inset(20)
             make.bottom.equalToSuperview().inset(40)
         }
+        
+        thumbnailImageView.isSkeletonable = true
+        titleLabel.isSkeletonable = true
+        titleLabel.skeletonTextLineHeight = .fixed(28)
+        titleLabel.skeletonTextNumberOfLines = 3
     }
     
     override func layoutSubviews() {
@@ -76,6 +82,8 @@ final class CarouselVideoCell: UICollectionViewCell {
     }
     
     func configure(with video: MainHomeVideo, isVisible: Bool = true) {
+        hideSkeleton()
+        
         titleLabel.text = video.name
         
         if let urlString = video.thumbnailURL, let url = URL(string: urlString) {
@@ -96,8 +104,19 @@ final class CarouselVideoCell: UICollectionViewCell {
         }
     }
     
+    func showSkeleton() {
+        thumbnailImageView.showAnimatedGradientSkeleton()
+        titleLabel.showAnimatedGradientSkeleton()
+    }
+    
+    func hideSkeleton() {
+        thumbnailImageView.hideSkeleton()
+        titleLabel.hideSkeleton()
+    }
+    
     override func prepareForReuse() {
         super.prepareForReuse()
+        hideSkeleton()
         thumbnailImageView.sd_cancelCurrentImageLoad()
         thumbnailImageView.image = placeholderImage
         titleLabel.text = nil

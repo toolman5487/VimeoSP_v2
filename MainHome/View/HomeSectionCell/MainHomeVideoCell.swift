@@ -13,7 +13,7 @@ import SDWebImage
 final class MainHomeVideoCell: UICollectionViewCell {
     
     private lazy var placeholderImage: UIImage? = {
-        UIImage(systemName: "photo.fill")?.withTintColor(
+        UIImage(systemName: "icloud.and.arrow.down.fill")?.withTintColor(
             .vimeoWhite.withAlphaComponent(0.4),
             renderingMode: .alwaysOriginal
         )

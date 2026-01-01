@@ -92,6 +92,10 @@ final class MainHomeViewModel: BaseViewModel {
         videoLists[sortType] ?? []
     }
     
+    func isLoading(for sortType: VideoSortType) -> Bool {
+        isLoadingLists[sortType] ?? false
+    }
+    
     func getVideoURL(for video: MainHomeVideo) -> String? {
         guard let videoId = video.videoId else { return nil }
         return URLConfig.frontendBaseURL.appendingPathComponent(videoId).absoluteString
