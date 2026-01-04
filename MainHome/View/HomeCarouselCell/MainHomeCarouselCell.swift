@@ -196,10 +196,10 @@ extension MainHomeCarouselCell: UICollectionViewDataSource {
                 cell.showSkeleton()
                 return cell
             }
-            let video = videos[indexPath.item]
-            let visibleIndexPaths = collectionView.indexPathsForVisibleItems
-            let isVisible = visibleIndexPaths.contains(indexPath)
-            cell.configure(with: video, isVisible: isVisible)
+        let video = videos[indexPath.item]
+        let visibleIndexPaths = collectionView.indexPathsForVisibleItems
+        let isVisible = visibleIndexPaths.contains(indexPath)
+        cell.configure(with: video, isVisible: isVisible)
         }
         return cell
     }

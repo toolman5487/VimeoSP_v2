@@ -157,7 +157,7 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
                 cell.showSkeleton()
                 return cell
             }
-            cell.configure(with: videos[indexPath.item], isVisible: true)
+        cell.configure(with: videos[indexPath.item], isVisible: true)
         }
         return cell
     }

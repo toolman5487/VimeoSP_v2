@@ -37,6 +37,8 @@ final class MainMeViewController: BaseMainViewController {
     override func setupCollectionView() {
         super.setupCollectionView()
         collectionView.dataSource = self
+        guard let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else { return }
+        layout.minimumLineSpacing = 0
     }
     
     private func registerCells() {
