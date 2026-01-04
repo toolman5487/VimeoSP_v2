@@ -84,10 +84,10 @@ final class MainHomeViewController: BaseMainViewController {
     }
     
     private func setupBindings() {
-        viewModel.$videoLists
+        Publishers.CombineLatest(viewModel.$videoLists, viewModel.$isLoadingLists)
             .receive(on: DispatchQueue.main)
             .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] _, _ in
                 guard let self = self else { return }
                 UIView.performWithoutAnimation {
                     self.collectionView.reloadData()
@@ -178,10 +178,12 @@ extension MainHomeViewController: UICollectionViewDataSource {
         
         let sortType = sections[sectionIndex]
         let videos = viewModel.getVideos(for: sortType)
+        let isLoading = viewModel.isLoading(for: sortType)
         
         cell.configure(
             title: sortType.displayName,
-            videos: videos
+            videos: videos,
+            isLoading: isLoading
         ) { [weak self] video in
             guard let self = self else { return }
             self.handleVideoTap(video)

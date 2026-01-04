@@ -15,6 +15,7 @@ final class MainHomeSectionCell: UICollectionViewCell {
     private var videos: [MainHomeVideo] = []
     private var onVideoTap: ((MainHomeVideo) -> Void)?
     private var cachedCellSize: CGSize?
+    private var isLoading: Bool = false
     
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -70,6 +71,7 @@ final class MainHomeSectionCell: UICollectionViewCell {
     }
     
     func configure(title: String, videos: [MainHomeVideo], onVideoTap: @escaping (MainHomeVideo) -> Void) {
+        self.isLoading = false
         titleLabel.attributedText = Self.createAttributedTitle(title)
         
         let videosChanged = self.videos.count != videos.count || 
@@ -80,6 +82,27 @@ final class MainHomeSectionCell: UICollectionViewCell {
         if videosChanged {
             cachedCellSize = nil
             collectionView.reloadData()
+        }
+    }
+    
+    func configure(title: String, videos: [MainHomeVideo], isLoading: Bool, onVideoTap: @escaping (MainHomeVideo) -> Void) {
+        self.onVideoTap = onVideoTap
+        self.isLoading = isLoading
+        titleLabel.attributedText = Self.createAttributedTitle(title)
+        
+        if isLoading && videos.isEmpty {
+            self.videos = []
+            cachedCellSize = nil
+            collectionView.reloadData()
+        } else {
+            let videosChanged = self.videos.count != videos.count || 
+                (videos.count > 0 && self.videos.count > 0 && self.videos[0].videoId != videos[0].videoId)
+            self.videos = videos
+            
+            if videosChanged {
+                cachedCellSize = nil
+                collectionView.reloadData()
+            }
         }
     }
     
@@ -115,7 +138,10 @@ final class MainHomeSectionCell: UICollectionViewCell {
 extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        videos.count
+        if isLoading && videos.isEmpty {
+            return 5
+        }
+        return videos.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -124,7 +150,15 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
             for: indexPath
         ) as! MainHomeVideoCell
         
-        cell.configure(with: videos[indexPath.item], isVisible: true)
+        if isLoading && videos.isEmpty {
+            cell.showSkeleton()
+        } else {
+            guard indexPath.item < videos.count else {
+                cell.showSkeleton()
+                return cell
+            }
+            cell.configure(with: videos[indexPath.item], isVisible: true)
+        }
         return cell
     }
     
@@ -148,6 +182,7 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard !isLoading, indexPath.item < videos.count else { return }
         collectionView.deselectItem(at: indexPath, animated: true)
         let video = videos[indexPath.item]
         onVideoTap?(video)
@@ -158,6 +193,8 @@ extension MainHomeSectionCell: UICollectionViewDataSource, UICollectionViewDeleg
 extension MainHomeSectionCell: UICollectionViewDataSourcePrefetching {
     
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        guard !isLoading else { return }
+        
         let videosToPrefetch = indexPaths.compactMap { indexPath -> MainHomeVideo? in
             guard indexPath.item < videos.count else { return nil }
             return videos[indexPath.item]

@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 import SDWebImage
+import SkeletonView
 
 final class MainHomeVideoCell: UICollectionViewCell {
     
@@ -78,9 +79,13 @@ final class MainHomeVideoCell: UICollectionViewCell {
             make.width.equalTo(60)
             make.height.equalTo(20)
         }
+        
+        thumbnailImageView.isSkeletonable = true
     }
     
     func configure(with video: MainHomeVideo, isVisible: Bool = true) {
+        hideSkeleton()
+        
         durationLabel.text = video.formattedDuration
         durationLabel.isHidden = video.formattedDuration == nil
         
@@ -105,8 +110,18 @@ final class MainHomeVideoCell: UICollectionViewCell {
         }
     }
     
+    func showSkeleton() {
+        thumbnailImageView.showAnimatedGradientSkeleton()
+        durationLabel.isHidden = true
+    }
+    
+    func hideSkeleton() {
+        thumbnailImageView.hideSkeleton()
+    }
+    
     override func prepareForReuse() {
         super.prepareForReuse()
+        hideSkeleton()
         thumbnailImageView.sd_cancelCurrentImageLoad()
         durationLabel.text = nil
         durationLabel.isHidden = true
