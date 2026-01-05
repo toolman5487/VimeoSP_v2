@@ -9,33 +9,9 @@ import Foundation
 import UIKit
 import SnapKit
 import SDWebImage
+import SkeletonView
 
 final class SearchResultCell: UITableViewCell {
-    
-    // MARK: - Constants
-    
-    private enum Constants {
-        
-        enum Thumbnail {
-            static let width: CGFloat = 160
-            static let height: CGFloat = 90
-            static let cornerRadius: CGFloat = 8
-        }
-        
-        enum Duration {
-            static let width: CGFloat = 60
-            static let height: CGFloat = 20
-            static let cornerRadius: CGFloat = 4
-            static let padding: CGFloat = 4
-        }
-        
-        enum Layout {
-            static let horizontalPadding: CGFloat = 16
-            static let verticalPadding: CGFloat = 16
-            static let labelSpacing: CGFloat = 4
-            static let thumbnailLabelSpacing: CGFloat = 12
-        }
-    }
     
     // MARK: - UI Components
     
@@ -43,7 +19,7 @@ final class SearchResultCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = Constants.Thumbnail.cornerRadius
+        imageView.layer.cornerRadius = 8
         imageView.backgroundColor = UIColor.vimeoWhite.withAlphaComponent(0.1)
         imageView.isAccessibilityElement = false
         return imageView
@@ -83,7 +59,7 @@ final class SearchResultCell: UITableViewCell {
         label.font = .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
         label.backgroundColor = UIColor.black.withAlphaComponent(0.7)
         label.textAlignment = .center
-        label.layer.cornerRadius = Constants.Duration.cornerRadius
+        label.layer.cornerRadius = 4
         label.clipsToBounds = true
         label.isAccessibilityElement = false
         return label
@@ -126,38 +102,55 @@ final class SearchResultCell: UITableViewCell {
     
     private func setupConstraints() {
         thumbnailImageView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(Constants.Layout.horizontalPadding)
+            make.leading.equalToSuperview().offset(16)
             make.centerY.equalToSuperview()
-            make.width.equalTo(Constants.Thumbnail.width)
-            make.height.equalTo(Constants.Thumbnail.height)
+            make.width.equalTo(160)
+            make.height.equalTo(90)
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.leading.equalTo(thumbnailImageView.snp.trailing).offset(Constants.Layout.thumbnailLabelSpacing)
-            make.trailing.equalToSuperview().offset(-Constants.Layout.horizontalPadding)
-            make.top.equalToSuperview().offset(Constants.Layout.verticalPadding)
+            make.leading.equalTo(thumbnailImageView.snp.trailing).offset(12)
+            make.trailing.equalToSuperview().offset(-16)
+            make.top.equalToSuperview().offset(16)
         }
         
         userLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(titleLabel)
-            make.top.equalTo(titleLabel.snp.bottom).offset(Constants.Layout.labelSpacing)
+            make.top.equalTo(titleLabel.snp.bottom).offset(4)
         }
         
         statsLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(titleLabel)
-            make.top.equalTo(userLabel.snp.bottom).offset(Constants.Layout.labelSpacing)
+            make.top.equalTo(userLabel.snp.bottom).offset(4)
         }
         
         durationLabel.snp.makeConstraints { make in
-            make.trailing.bottom.equalTo(thumbnailImageView).offset(-Constants.Duration.padding)
-            make.width.equalTo(Constants.Duration.width)
-            make.height.equalTo(Constants.Duration.height)
+            make.trailing.bottom.equalTo(thumbnailImageView).offset(-4)
+            make.width.equalTo(60)
+            make.height.equalTo(20)
         }
+    
+        setupSkeleton()
+    }
+    
+    private func setupSkeleton() {
+        thumbnailImageView.isSkeletonable = true
+        titleLabel.isSkeletonable = true
+        titleLabel.skeletonTextLineHeight = .fixed(20)
+        titleLabel.skeletonTextNumberOfLines = 2
+        userLabel.isSkeletonable = true
+        userLabel.skeletonTextLineHeight = .fixed(16)
+        userLabel.skeletonTextNumberOfLines = 1
+        statsLabel.isSkeletonable = true
+        statsLabel.skeletonTextLineHeight = .fixed(14)
+        statsLabel.skeletonTextNumberOfLines = 1
     }
     
     // MARK: - Configuration
     
     func configure(with video: VimeoVideo) {
+        hideSkeleton()
+        
         titleLabel.text = video.name
         userLabel.text = video.user?.name
         statsLabel.text = video.stats?.formattedPlays.map { "\($0) plays" }
@@ -167,6 +160,23 @@ final class SearchResultCell: UITableViewCell {
         
         loadThumbnail(for: video)
         updateAccessibility(for: video)
+    }
+    
+    // MARK: - Skeleton Methods
+    
+    func showSkeleton() {
+        thumbnailImageView.showAnimatedGradientSkeleton()
+        titleLabel.showAnimatedGradientSkeleton()
+        userLabel.showAnimatedGradientSkeleton()
+        statsLabel.showAnimatedGradientSkeleton()
+        durationLabel.isHidden = true
+    }
+    
+    func hideSkeleton() {
+        thumbnailImageView.hideSkeleton()
+        titleLabel.hideSkeleton()
+        userLabel.hideSkeleton()
+        statsLabel.hideSkeleton()
     }
     
     // MARK: - Private Methods
@@ -212,6 +222,7 @@ final class SearchResultCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        hideSkeleton()
         thumbnailImageView.sd_cancelCurrentImageLoad()
         thumbnailImageView.image = nil
         titleLabel.text = nil
