@@ -176,11 +176,8 @@ final class HomeSearchResultsViewController: UIViewController, AlertPresentable 
             .sink { [weak self] isLoading in
                 guard let self else { return }
                 if isLoading && viewModel.searchResults.isEmpty {
-                    loadingIndicator.startAnimating()
-                    UIAccessibility.post(notification: .announcement, argument: "Loading search results")
                     tableView.reloadData()
                 } else {
-                    loadingIndicator.stopAnimating()
                     if !viewModel.searchResults.isEmpty {
                         tableView.reloadData()
                     }
@@ -289,7 +286,11 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
 
 extension HomeSearchResultsViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        viewModel.searchQuery = searchText
+        if searchText.isEmpty {
+            viewModel.clearSearch()
+        } else {
+            viewModel.searchQuery = searchText
+        }
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
