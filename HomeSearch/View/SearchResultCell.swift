@@ -112,16 +112,19 @@ final class SearchResultCell: UITableViewCell {
             make.leading.equalTo(thumbnailImageView.snp.trailing).offset(12)
             make.trailing.equalToSuperview().offset(-16)
             make.top.equalToSuperview().offset(16)
+            make.height.greaterThanOrEqualTo(40)
         }
         
         userLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(titleLabel)
             make.top.equalTo(titleLabel.snp.bottom).offset(4)
+            make.height.greaterThanOrEqualTo(16)
         }
         
         statsLabel.snp.makeConstraints { make in
             make.leading.trailing.equalTo(titleLabel)
             make.top.equalTo(userLabel.snp.bottom).offset(4)
+            make.height.greaterThanOrEqualTo(14)
         }
         
         durationLabel.snp.makeConstraints { make in
@@ -165,6 +168,8 @@ final class SearchResultCell: UITableViewCell {
     // MARK: - Skeleton Methods
     
     func showSkeleton() {
+        layoutIfNeeded()
+        
         thumbnailImageView.showAnimatedGradientSkeleton()
         titleLabel.showAnimatedGradientSkeleton()
         userLabel.showAnimatedGradientSkeleton()

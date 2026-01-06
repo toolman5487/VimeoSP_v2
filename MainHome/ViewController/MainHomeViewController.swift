@@ -39,6 +39,8 @@ final class MainHomeViewController: BaseMainViewController {
             MainHomeSectionCell.self,
             forCellWithReuseIdentifier: String(describing: MainHomeSectionCell.self)
         )
+        
+        setupRefresh(for: collectionView)
     }
     
     

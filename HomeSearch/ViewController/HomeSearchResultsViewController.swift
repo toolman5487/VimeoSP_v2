@@ -247,13 +247,19 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
             return UITableViewCell()
         }
         if viewModel.isLoading && viewModel.searchResults.isEmpty {
-            cell.showSkeleton()
-        } else {
+        } else if indexPath.row < viewModel.searchResults.count {
             let video = viewModel.searchResults[indexPath.row]
             cell.configure(with: video)
         }
         
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let searchCell = cell as? SearchResultCell,
+           viewModel.isLoading && viewModel.searchResults.isEmpty {
+            searchCell.showSkeleton()
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
