@@ -55,7 +55,7 @@ final class HomeSearchViewModel: BaseViewModel {
         resetSearchState(query: query, type: type)
         isLoading = true
         
-        performSearch(query: query, type: type, page: currentPage)
+        performSearch(query: query, type: type, page: 1, shouldCache: false)
     }
     
     func loadMore() {
@@ -124,16 +124,7 @@ final class HomeSearchViewModel: BaseViewModel {
         isLoading = true
         resetError()
         
-        searchCancellable = service.search(query: query, type: .videos, page: 1, perPage: Constants.perPage)
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    self?.handleCompletion(completion)
-                },
-                receiveValue: { [weak self] response in
-                    self?.handleSearchResponse(response, cacheKey: query)
-                }
-            )
+        performSearch(query: query, type: .videos, page: 1, shouldCache: true)
     }
     
     private func resetSearchState(query: String, type: SearchPath) {
@@ -144,7 +135,8 @@ final class HomeSearchViewModel: BaseViewModel {
         resetError()
     }
     
-    private func performSearch(query: String, type: SearchPath, page: Int) {
+    private func performSearch(query: String, type: SearchPath, page: Int, shouldCache: Bool) {
+        let cacheKey = shouldCache ? query : nil
         searchCancellable = service.search(query: query, type: type, page: page, perPage: Constants.perPage)
             .receive(on: DispatchQueue.main)
             .sink(
@@ -152,7 +144,7 @@ final class HomeSearchViewModel: BaseViewModel {
                     self?.handleCompletion(completion)
                 },
                 receiveValue: { [weak self] response in
-                    self?.handleSearchResponse(response, cacheKey: nil)
+                    self?.handleSearchResponse(response, cacheKey: cacheKey)
                 }
             )
     }
@@ -180,7 +172,7 @@ final class HomeSearchViewModel: BaseViewModel {
         searchResults = results
         isLoading = false
         total = results.count
-        hasMorePages = false
+        hasMorePages = results.count >= Constants.perPage
     }
     
     private func cacheResults(_ results: [VimeoVideo], forKey key: String) {

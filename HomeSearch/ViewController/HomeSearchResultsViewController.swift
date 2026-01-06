@@ -20,7 +20,6 @@ final class HomeSearchResultsViewController: UIViewController, AlertPresentable 
     
     // MARK: - UI Components
     
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
     private let footerLoadingIndicator = UIActivityIndicatorView(style: .medium)
     
     private let searchBar: UISearchBar = {
@@ -107,11 +106,9 @@ final class HomeSearchResultsViewController: UIViewController, AlertPresentable 
     
     private func setupViews() {
         view.addSubview(tableView)
-        view.addSubview(loadingIndicator)
         view.addSubview(emptyStateView)
         
         setupTableView()
-        setupLoadingIndicator()
         setupEmptyStateView()
     }
     
@@ -140,14 +137,6 @@ final class HomeSearchResultsViewController: UIViewController, AlertPresentable 
         tableView.tableFooterView = footer
     }
     
-    private func setupLoadingIndicator() {
-        loadingIndicator.color = .vimeoBlue
-        loadingIndicator.hidesWhenStopped = true
-        loadingIndicator.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
-    }
-    
     private func setupEmptyStateView() {
         emptyStateView.snp.makeConstraints { make in
             make.center.equalToSuperview()
@@ -163,26 +152,14 @@ final class HomeSearchResultsViewController: UIViewController, AlertPresentable 
     // MARK: - Bindings
     
     private func setupBindings() {
-        viewModel.$searchResults
+        Publishers.CombineLatest(viewModel.$searchResults, viewModel.$isLoading)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
+            .removeDuplicates { prev, next in
+                prev.0.count == next.0.count && prev.1 == next.1
+            }
+            .sink { [weak self] _, _ in
                 self?.tableView.reloadData()
                 self?.updateEmptyState()
-            }
-            .store(in: &cancellables)
-        
-        viewModel.$isLoading
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] isLoading in
-                guard let self else { return }
-                if isLoading && viewModel.searchResults.isEmpty {
-                    tableView.reloadData()
-                } else {
-                    if !viewModel.searchResults.isEmpty {
-                        tableView.reloadData()
-                    }
-                }
-                updateEmptyState()
             }
             .store(in: &cancellables)
         
@@ -246,8 +223,8 @@ extension HomeSearchResultsViewController: UITableViewDataSource, UITableViewDel
         guard let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: SearchResultCell.self), for: indexPath) as? SearchResultCell else {
             return UITableViewCell()
         }
-        if viewModel.isLoading && viewModel.searchResults.isEmpty {
-        } else if indexPath.row < viewModel.searchResults.count {
+        
+        if !viewModel.isLoading && indexPath.row < viewModel.searchResults.count {
             let video = viewModel.searchResults[indexPath.row]
             cell.configure(with: video)
         }

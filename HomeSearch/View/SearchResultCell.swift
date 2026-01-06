@@ -152,7 +152,9 @@ final class SearchResultCell: UITableViewCell {
     // MARK: - Configuration
     
     func configure(with video: VimeoVideo) {
-        hideSkeleton()
+        if titleLabel.isSkeletonActive {
+            hideSkeleton()
+        }
         
         titleLabel.text = video.name
         userLabel.text = video.user?.name
@@ -168,6 +170,8 @@ final class SearchResultCell: UITableViewCell {
     // MARK: - Skeleton Methods
     
     func showSkeleton() {
+        guard !titleLabel.isSkeletonActive else { return }
+        
         layoutIfNeeded()
         
         thumbnailImageView.showAnimatedGradientSkeleton()
