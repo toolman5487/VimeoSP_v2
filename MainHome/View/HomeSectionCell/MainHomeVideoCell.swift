@@ -13,13 +13,6 @@ import SkeletonView
 
 final class MainHomeVideoCell: UICollectionViewCell {
     
-    private lazy var placeholderImage: UIImage? = {
-        UIImage(systemName: "icloud.and.arrow.down.fill")?.withTintColor(
-            .vimeoWhite.withAlphaComponent(0.4),
-            renderingMode: .alwaysOriginal
-        )
-    }()
-    
     private let thumbnailImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -101,12 +94,12 @@ final class MainHomeVideoCell: UICollectionViewCell {
             
             thumbnailImageView.sd_setImage(
                 with: url,
-                placeholderImage: placeholderImage,
+                placeholderImage: nil,
                 options: options,
                 context: [.imageScaleFactor: UIScreen.main.scale]
             )
         } else {
-            thumbnailImageView.image = placeholderImage
+            thumbnailImageView.image = nil
         }
     }
     

@@ -13,13 +13,6 @@ import SkeletonView
 
 final class CarouselVideoCell: UICollectionViewCell {
     
-    private lazy var placeholderImage: UIImage? = {
-        UIImage(systemName: "photo.fill")?.withTintColor(
-            .vimeoWhite.withAlphaComponent(0.4),
-            renderingMode: .alwaysOriginal
-        )
-    }()
-    
     private let thumbnailImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -95,12 +88,12 @@ final class CarouselVideoCell: UICollectionViewCell {
             
             thumbnailImageView.sd_setImage(
                 with: url,
-                placeholderImage: placeholderImage,
+                placeholderImage: nil,
                 options: options,
                 context: [.imageScaleFactor: UIScreen.main.scale]
             )
         } else {
-            thumbnailImageView.image = placeholderImage
+            thumbnailImageView.image = nil
         }
     }
     
@@ -118,7 +111,7 @@ final class CarouselVideoCell: UICollectionViewCell {
         super.prepareForReuse()
         hideSkeleton()
         thumbnailImageView.sd_cancelCurrentImageLoad()
-        thumbnailImageView.image = placeholderImage
+        thumbnailImageView.image = nil
         titleLabel.text = nil
     }
 }
