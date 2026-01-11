@@ -14,25 +14,18 @@ protocol MainHomeServiceProtocol {
 
 final class MainHomeService: MainHomeServiceProtocol {
     
-    private let decoder = JSONDecoder()
-    
     private let requestQueue = DispatchQueue(label: "com.vimeo.mainhome.service", qos: .utility)
     
     func fetchVideos(sort: VideoSortType, page: Int? = nil, perPage: Int? = nil) -> AnyPublisher<MainHomeVideoListResponse, Error> {
         let parameters = buildParameters(for: sort, page: page, perPage: perPage)
         
         return Deferred {
-            Future { [weak self] promise in
-                guard let self = self else {
-                    promise(.failure(APIError.unknown(NSError(domain: "MainHomeService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Service deallocated"]))))
-                    return
-                }
-                
+            Future { promise in
                 APIConfig.APIGET(path: "/videos", parameters: parameters) { result in
                     switch result {
                     case .success(let data):
                         do {
-                            let response = try self.decoder.decode(MainHomeVideoListResponse.self, from: data)
+                            let response = try JSONDecoder().decode(MainHomeVideoListResponse.self, from: data)
                             promise(.success(response))
                         } catch {
                             promise(.failure(APIError.decodingError(error)))

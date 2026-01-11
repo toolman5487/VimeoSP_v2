@@ -153,7 +153,7 @@ final class SearchResultCell: UITableViewCell {
     
     func configure(with video: VimeoVideo) {
         if titleLabel.isSkeletonActive {
-            hideSkeleton()
+        hideSkeleton()
         }
         
         titleLabel.text = video.name

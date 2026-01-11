@@ -272,7 +272,7 @@ extension HomeSearchResultsViewController: UISearchBarDelegate {
         if searchText.isEmpty {
             viewModel.clearSearch()
         } else {
-            viewModel.searchQuery = searchText
+        viewModel.searchQuery = searchText
         }
     }
     
