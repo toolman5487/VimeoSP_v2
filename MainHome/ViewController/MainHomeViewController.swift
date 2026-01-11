@@ -15,7 +15,6 @@ final class MainHomeViewController: BaseMainViewController {
     
     private let viewModel = MainHomeViewModel()
     private var cancellables = Set<AnyCancellable>()
-    private let sections: [VideoSortType] = [.trending, .date]
     
     
     override func viewDidLoad() {
@@ -95,6 +94,17 @@ final class MainHomeViewController: BaseMainViewController {
             }
             .store(in: &cancellables)
         
+        Publishers.CombineLatest(viewModel.$watchHistory, viewModel.$isLoadingWatchHistory)
+            .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
+            .sink { [weak self] _, _ in
+                guard let self = self else { return }
+                UIView.performWithoutAnimation {
+                    self.collectionView.reloadData()
+                }
+            }
+            .store(in: &cancellables)
+        
         viewModel.$isLoading
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
@@ -146,50 +156,57 @@ final class MainHomeViewController: BaseMainViewController {
 extension MainHomeViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        sections.count + 1
+        viewModel.totalItemCount
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if indexPath.item == 0 {
+        guard let sectionType = viewModel.getSectionType(at: indexPath.item) else {
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: String(describing: MainHomeSectionCell.self),
+                for: indexPath
+            ) as! MainHomeSectionCell
+            return cell
+        }
+        
+        guard let sectionData = viewModel.getSectionData(for: sectionType) else {
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: String(describing: MainHomeSectionCell.self),
+                for: indexPath
+            ) as! MainHomeSectionCell
+            return cell
+        }
+        
+        switch sectionType {
+        case .carousel:
             let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: String(describing: MainHomeCarouselCell.self),
                 for: indexPath
             ) as! MainHomeCarouselCell
             
-            let videos = viewModel.getVideos(for: .popular)
-            let isLoading = viewModel.isLoading(for: .popular)
-            cell.configure(videos: videos, isLoading: isLoading) { [weak self] video in
+            cell.configure(videos: sectionData.videos, isLoading: sectionData.isLoading) { [weak self] video in
+                guard let self = self else { return }
+                self.handleVideoTap(video)
+            }
+            
+            return cell
+            
+        case .videoSection, .watchHistory:
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: String(describing: MainHomeSectionCell.self),
+                for: indexPath
+            ) as! MainHomeSectionCell
+            
+            cell.configure(
+                title: sectionData.title,
+                videos: sectionData.videos,
+                isLoading: sectionData.isLoading
+            ) { [weak self] video in
                 guard let self = self else { return }
                 self.handleVideoTap(video)
             }
             
             return cell
         }
-        
-        let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: String(describing: MainHomeSectionCell.self),
-            for: indexPath
-        ) as! MainHomeSectionCell
-        
-        let sectionIndex = indexPath.item - 1
-        guard sectionIndex < sections.count else {
-            return cell
-        }
-        
-        let sortType = sections[sectionIndex]
-        let videos = viewModel.getVideos(for: sortType)
-        let isLoading = viewModel.isLoading(for: sortType)
-        
-        cell.configure(
-            title: sortType.displayName,
-            videos: videos,
-            isLoading: isLoading
-        ) { [weak self] video in
-            guard let self = self else { return }
-            self.handleVideoTap(video)
-        }
-        
-        return cell
     }
 }
 
@@ -212,12 +229,6 @@ extension MainHomeViewController: UICollectionViewDataSourcePrefetching {
     }
     
     private func getVideosForIndexPath(_ indexPath: IndexPath) -> [MainHomeVideo]? {
-        if indexPath.item == 0 {
-            return viewModel.getVideos(for: .popular)
-        } else {
-            let sectionIndex = indexPath.item - 1
-            guard sectionIndex < sections.count else { return nil }
-            return viewModel.getVideos(for: sections[sectionIndex])
-        }
+        viewModel.getVideosForIndexPath(indexPath.item)
     }
 }

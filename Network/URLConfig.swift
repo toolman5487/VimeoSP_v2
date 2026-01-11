@@ -43,6 +43,7 @@ enum MePath {
     case meChannels
     case meGroups
     case meTeams
+    case meWatchHistory
 
     var path: String {
         switch self {
@@ -57,6 +58,7 @@ enum MePath {
         case .meChannels: return "/me/channels"
         case .meGroups: return "/me/groups"
         case .meTeams: return "/me/teams"
+        case .meWatchHistory: return "/me/watched/videos"
         }
     }
     

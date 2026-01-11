@@ -10,6 +10,7 @@ import Combine
 
 protocol MainHomeServiceProtocol {
     func fetchVideos(sort: VideoSortType, page: Int?, perPage: Int?) -> AnyPublisher<MainHomeVideoListResponse, Error>
+    func fetchWatchHistory(page: Int?, perPage: Int?) -> AnyPublisher<MainHomeVideoListResponse, Error>
 }
 
 final class MainHomeService: MainHomeServiceProtocol {
@@ -68,6 +69,41 @@ final class MainHomeService: MainHomeServiceProtocol {
         }
         
         return parameters
+    }
+    
+    func fetchWatchHistory(page: Int? = nil, perPage: Int? = nil) -> AnyPublisher<MainHomeVideoListResponse, Error> {
+        var parameters: [String: Any] = [:]
+        
+        if let page = page, page > 0 {
+            parameters["page"] = page
+        }
+        
+        if let perPage = perPage, perPage > 0, perPage <= 100 {
+            parameters["per_page"] = perPage
+        }
+        
+        let finalParameters: [String: Any]? = parameters.isEmpty ? nil : parameters
+        
+        return Deferred {
+            Future { promise in
+                APIConfig.APIGET(path: MePath.meWatchHistory.path, parameters: finalParameters) { result in
+                    switch result {
+                    case .success(let data):
+                        do {
+                            let response = try JSONDecoder().decode(MainHomeVideoListResponse.self, from: data)
+                            promise(.success(response))
+                        } catch {
+                            promise(.failure(APIError.decodingError(error)))
+                        }
+                    case .failure(let error):
+                        promise(.failure(error))
+                    }
+                }
+            }
+        }
+        .retry(2)
+        .subscribe(on: requestQueue)
+        .eraseToAnyPublisher()
     }
 }
 
